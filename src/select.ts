@@ -43,7 +43,8 @@ export function selectBlock(
   options: VueLoaderOptions,
   loaderContext: LoaderContext<VueLoaderOptions>,
   query: ParsedUrlQuery,
-  appendExtension: boolean
+  appendExtension: boolean,
+  isHMR: boolean = false
 ) {
   const filename = loaderContext.resourcePath
 
@@ -56,12 +57,9 @@ export function selectBlock(
       loaderContext.resourcePath += '.' + (template.lang || 'html')
     }
     const cacheKey = `${filename}:template`
-    const map = getCachedMapOrUpdate(
-      templateCache,
-      cacheKey,
-      template.content,
-      template.map
-    )
+    const map = isHMR
+      ? getCachedMapOrUpdate(templateCache, cacheKey, template.content, template.map)
+      : template.map
     loaderContext.callback(null, template.content, map as any)
     return
   }
@@ -73,12 +71,9 @@ export function selectBlock(
       loaderContext.resourcePath += '.' + (script.lang || 'js')
     }
     const cacheKey = `${filename}:script`
-    const map = getCachedMapOrUpdate(
-      scriptCache,
-      cacheKey,
-      script.content,
-      script.map
-    )
+    const map = isHMR
+      ? getCachedMapOrUpdate(scriptCache, cacheKey, script.content, script.map)
+      : script.map
     loaderContext.callback(null, script.content, map as any)
     return
   }
@@ -90,12 +85,9 @@ export function selectBlock(
       loaderContext.resourcePath += '.' + (style.lang || 'css')
     }
     const cacheKey = `${filename}:style:${query.index}`
-    const map = getCachedMapOrUpdate(
-      styleCache,
-      cacheKey,
-      style.content,
-      style.map
-    )
+    const map = isHMR
+      ? getCachedMapOrUpdate(styleCache, cacheKey, style.content, style.map)
+      : style.map
     loaderContext.callback(null, style.content, map as any)
     return
   }
@@ -104,12 +96,9 @@ export function selectBlock(
   if (query.type === 'custom' && query.index != null) {
     const block = descriptor.customBlocks[Number(query.index)]
     const cacheKey = `${filename}:custom:${query.index}`
-    const map = getCachedMapOrUpdate(
-      customBlockCache,
-      cacheKey,
-      block.content,
-      block.map
-    )
+    const map = isHMR
+      ? getCachedMapOrUpdate(customBlockCache, cacheKey, block.content, block.map)
+      : block.map
     loaderContext.callback(null, block.content, map as any)
   }
 }

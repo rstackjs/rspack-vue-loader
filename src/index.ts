@@ -149,6 +149,14 @@ export default function loader(
       : shortFilePath
   )
 
+  // feature information
+  const hasScoped = descriptor.styles.some((s) => s.scoped)
+  const needsHotReload =
+    !isServer &&
+    !isProduction &&
+    !!(descriptor.script || descriptor.scriptSetup || descriptor.template) &&
+    options.hotReload !== false
+
   // if the query has a type field, this is a language block request
   // e.g. foo.vue?type=template&id=xxxxx
   // and we will return early
@@ -159,17 +167,10 @@ export default function loader(
       options,
       loaderContext,
       incomingQuery,
-      !!options.appendExtension
+      !!options.appendExtension,
+      needsHotReload
     )
   }
-
-  // feature information
-  const hasScoped = descriptor.styles.some((s) => s.scoped)
-  const needsHotReload =
-    !isServer &&
-    !isProduction &&
-    !!(descriptor.script || descriptor.scriptSetup || descriptor.template) &&
-    options.hotReload !== false
 
   // extra properties to attach to the script object
   // we need to do this in a tree-shaking friendly manner
