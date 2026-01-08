@@ -98,7 +98,6 @@ export default function loader(
     rootContext,
     resourcePath,
     resourceQuery: _resourceQuery = '',
-    _compiler,
   } = loaderContext
 
   const rawQuery = _resourceQuery.slice(1)
