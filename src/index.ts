@@ -23,7 +23,6 @@ import {
   getOptions,
   stringifyRequest as _stringifyRequest,
   genMatchResource,
-  testWebpack5,
 } from './util'
 
 export { VueLoaderPlugin }
@@ -102,13 +101,13 @@ export default function loader(
     _compiler,
   } = loaderContext
 
-  const isWebpack5 = testWebpack5(_compiler)
   const rawQuery = _resourceQuery.slice(1)
   const incomingQuery = qs.parse(rawQuery)
   const resourceQuery = rawQuery ? `&${rawQuery}` : ''
   const options = (getOptions(loaderContext) || {}) as VueLoaderOptions
-  const enableInlineMatchResource =
-    isWebpack5 && Boolean(options.experimentalInlineMatchResource)
+  const enableInlineMatchResource = Boolean(
+    options.experimentalInlineMatchResource
+  )
 
   const isServer = options.isServerBuild ?? target === 'node'
   const isProduction =

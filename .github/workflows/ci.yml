@@ -7,19 +7,6 @@ on:
     branches:
       - main
 jobs:
-  test-webpack4:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: pnpm/action-setup@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm pretest:webpack4
-      - run: pnpm test:webpack4
-
   test-webpack5:
     runs-on: ubuntu-latest
     steps:

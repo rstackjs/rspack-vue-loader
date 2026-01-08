@@ -124,9 +124,7 @@ test('should not duplicate css modules value imports', async () => {
 
 // #1213
 test('html-webpack-plugin', async () => {
-  const HTMLPlugin = process.env.WEBPACK4
-    ? require('html-webpack-plugin')
-    : require('html-webpack-plugin-v5')
+  const HTMLPlugin = require('html-webpack-plugin-v5')
   await bundle({
     entry: 'basic.vue',
     plugins: [
@@ -160,9 +158,7 @@ test('usage with null-loader', async () => {
 
 // #1278
 test('proper dedupe on src-imports with options', async () => {
-  const tsLoaderPath = process.env.WEBPACK4
-    ? require.resolve('ts-loader')
-    : require.resolve('ts-loader-v9')
+  const tsLoaderPath = require.resolve('ts-loader-v9')
   const result = await mockBundleAndRun({
     entry: 'ts.vue',
     resolve: {
