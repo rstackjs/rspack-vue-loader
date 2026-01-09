@@ -166,7 +166,7 @@ export default function loader(
       loaderContext,
       incomingQuery,
       !!options.appendExtension,
-      needsHotReload
+      needsHotReload && loaderContext.hot
     )
   }
 
