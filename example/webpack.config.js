@@ -28,11 +28,6 @@ module.exports = (env = {}) => {
       devtool: 'source-map',
       resolve: {
         extensions: ['.js', '.ts'],
-        alias: process.env.WEBPACK4
-          ? {
-              webpack: 'webpack4',
-            }
-          : {},
       },
       output: {
         path: path.resolve(
@@ -84,9 +79,7 @@ module.exports = (env = {}) => {
             test: /\.ts$/,
             use: [
               {
-                loader: process.env.WEBPACK4
-                  ? require.resolve('ts-loader')
-                  : require.resolve('ts-loader-v9'),
+                loader: require.resolve('ts-loader-v9'),
                 options: {
                   transpileOnly: true,
                   appendTsSuffixTo: [/\.vue$/],

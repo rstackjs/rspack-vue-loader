@@ -44,9 +44,7 @@ const baseConfig: webpack.Configuration = {
       },
       {
         test: /\.ts$/,
-        loader: process.env.WEBPACK4
-          ? require.resolve('ts-loader')
-          : require.resolve('ts-loader-v9'),
+        loader: require.resolve('ts-loader-v9'),
         options: {
           transpileOnly: true,
           appendTsSuffixTo: [/\.vue$/],

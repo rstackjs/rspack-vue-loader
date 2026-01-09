@@ -16,8 +16,6 @@
     "test": "jest",
     "pretest:match-resource": "tsc",
     "test:match-resource": "INLINE_MATCH_RESOURCE=true jest",
-    "pretest:webpack4": "tsc",
-    "test:webpack4": "WEBPACK4=true jest",
     "dev-example": "node example/devServer.js --config example/webpack.config.js --inline --hot",
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
@@ -41,7 +39,7 @@
     "watchpack": "^2.4.0"
   },
   "peerDependencies": {
-    "webpack": "^4.1.0 || ^5.0.0-0"
+    "webpack": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@vue/compiler-sfc": {
@@ -97,7 +95,6 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.3",
     "webpack-merge": "^5.1.4",
-    "webpack4": "npm:webpack@^4.46.0",
     "yorkie": "^2.0.0"
   }
 }

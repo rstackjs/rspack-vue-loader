@@ -1,6 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from 'webpack'
 import * as qs from 'querystring'
-import { getOptions, stringifyRequest, testWebpack5 } from './util'
+import { getOptions, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
 const selfPath = require.resolve('./index')
@@ -58,10 +58,9 @@ export const pitch = function () {
   })
 
   // Inject style-post-loader before css-loader for scoped CSS and trimming
-  const isWebpack5 = testWebpack5(context._compiler)
   const options = (getOptions(context) || {}) as VueLoaderOptions
   if (query.type === `style`) {
-    if (isWebpack5 && context._compiler?.options.experiments.css) {
+    if (context._compiler?.options.experiments.css) {
       // If user enables `experiments.css`, then we are trying to emit css code directly.
       // Although we can target requests like `xxx.vue?type=style` to match `type: "css"`,
       // it will make the plugin a mess.
@@ -151,10 +150,8 @@ function genRequest(
   lang: string,
   context: LoaderContext<VueLoaderOptions>
 ) {
-  const isWebpack5 = testWebpack5(context._compiler)
   const options = (getOptions(context) || {}) as VueLoaderOptions
-  const enableInlineMatchResource =
-    isWebpack5 && options.experimentalInlineMatchResource
+  const enableInlineMatchResource = options.experimentalInlineMatchResource
 
   const loaderStrings = loaders.map((loader) => {
     return typeof loader === 'string' ? loader : loader.request

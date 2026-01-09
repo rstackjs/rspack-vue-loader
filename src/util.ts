@@ -189,11 +189,3 @@ export function genMatchResource(
     loaderString ? `${loaderString}!` : ''
   }${resourcePath}${resourceQuery}`
 }
-
-export const testWebpack5 = (compiler?: Compiler) => {
-  if (!compiler) {
-    return false
-  }
-  const webpackVersion = compiler?.webpack?.version
-  return Boolean(webpackVersion && Number(webpackVersion.split('.')[0]) > 4)
-}
