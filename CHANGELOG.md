@@ -1,27 +1,21 @@
-## [17.4.3](https://github.com/vuejs/vue-loader/compare/v17.4.2...v17.4.3) (2025-10-20)
+## [17.4.5](https://github.com/rspack-contrib/rspack-vue-loader/compare/v17.4.2...v17.4.5) (2026-01-12)
 
 
 ### Bug Fixes
 
-* treat `with` as known loader rule property ([#10](https://github.com/vuejs/vue-loader/issues/10)) ([430bead](https://github.com/vuejs/vue-loader/commit/430bead4305cf23e1817f385522ad7f83eff4068))
+* remove support for webpack4 ([#12](https://github.com/rspack-contrib/rspack-vue-loader/issues/12)) ([79531c1](https://github.com/rspack-contrib/rspack-vue-loader/commit/79531c1af75c72d684023f0cdbb28a8072075e81))
+* rename to rspack-vue-loader ([b555926](https://github.com/rspack-contrib/rspack-vue-loader/commit/b55592660d26f49c2e16cab558a1f12bb511bfec))
+* treat `with` as known loader rule property ([#10](https://github.com/rspack-contrib/rspack-vue-loader/issues/10)) ([430bead](https://github.com/rspack-contrib/rspack-vue-loader/commit/430bead4305cf23e1817f385522ad7f83eff4068))
+* unnecessary JS HMR caused by sourcemap changes ([#11](https://github.com/rspack-contrib/rspack-vue-loader/issues/11)) ([0492f99](https://github.com/rspack-contrib/rspack-vue-loader/commit/0492f99c069905057a1d131d0bd1ce6f380ce088))
 
 
 
-## [17.4.2](https://github.com/vuejs/vue-loader/compare/v17.4.1...v17.4.2) (2023-12-30)
-
-
-### Bug Fixes
-
-* pass compilerOptions to sfc parse & re-enable AST reuse ([d2a2e05](https://github.com/vuejs/vue-loader/commit/d2a2e051c3d985d1ae6bb468749b24543631b482))
-
-
-
-## [17.4.2](https://github.com/vuejs/vue-loader/compare/v17.4.1...v17.4.2) (2023-12-30)
+## [17.4.2](https://github.com/rspack-contrib/rspack-vue-loader/compare/v17.4.1...v17.4.2) (2023-12-30)
 
 
 ### Bug Fixes
 
-* pass compilerOptions to sfc parse & re-enable AST reuse ([d2a2e05](https://github.com/vuejs/vue-loader/commit/d2a2e051c3d985d1ae6bb468749b24543631b482))
+* pass compilerOptions to sfc parse & re-enable AST reuse ([d2a2e05](https://github.com/rspack-contrib/rspack-vue-loader/commit/d2a2e051c3d985d1ae6bb468749b24543631b482))
 
 
 
