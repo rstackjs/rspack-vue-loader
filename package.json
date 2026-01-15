@@ -1,9 +1,9 @@
 {
   "name": "rspack-vue-loader",
-  "version": "17.4.4",
+  "version": "17.4.5",
   "license": "MIT",
   "author": "Evan You",
-  "repository": "rspack-contrib/rspack-vue-loader",
+  "repository": "rstackjs/rspack-vue-loader",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
