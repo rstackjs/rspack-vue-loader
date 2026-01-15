@@ -239,7 +239,7 @@ test('should work with i18n loader in production mode', async () => {
 // #2029
 test('should pass correct options to template compiler', async () => {
   const fakeCompiler: any = {
-    compile: jest
+    compile: rstest
       .fn()
       .mockReturnValue({ code: 'export function render() { return null; }' }),
   }

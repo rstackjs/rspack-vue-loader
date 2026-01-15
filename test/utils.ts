@@ -1,4 +1,3 @@
-/* env jest */
 import * as path from 'path'
 import * as crypto from 'crypto'
 import webpack from 'webpack'
@@ -6,8 +5,8 @@ import merge from 'webpack-merge'
 // import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { fs as mfs } from 'memfs'
 import { JSDOM, VirtualConsole } from 'jsdom'
-import { VueLoaderPlugin } from '..'
-import type { VueLoaderOptions } from '..'
+import { VueLoaderPlugin } from 'rspack-vue-loader'
+import type { VueLoaderOptions } from 'rspack-vue-loader'
 
 function hash(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex').substring(0, 8)
