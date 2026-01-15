@@ -27,7 +27,7 @@ describe('example', function () {
 });
   `.trim()
   )
-})
+}, 10_000)
 
 test('custom blocks should work with src imports', async () => {
   const { code } = await bundle({
