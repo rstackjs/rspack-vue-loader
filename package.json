@@ -35,12 +35,16 @@
   },
   "packageManager": "pnpm@8.12.0",
   "dependencies": {
+    "@rspack/lite-tapable": "^1.1.0",
     "chalk": "^4.1.0"
   },
   "peerDependencies": {
-    "webpack": "^5.0.0"
+    "@rspack/core": "^1.0.0 || ^2.0.0-0"
   },
   "peerDependenciesMeta": {
+    "@rspack/core": {
+      "optional": false
+    },
     "@vue/compiler-sfc": {
       "optional": true
     },

@@ -9,13 +9,13 @@ import { descriptorCache } from './descriptorCache'
 const id = 'vue-loader-plugin'
 const NS = 'vue-loader'
 
-const BasicEffectRulePlugin = require('webpack/lib/rules/BasicEffectRulePlugin')
-const BasicMatcherRulePlugin = require('webpack/lib/rules/BasicMatcherRulePlugin')
-const UseEffectRulePlugin = require('webpack/lib/rules/UseEffectRulePlugin')
-const RuleSetCompiler = require('webpack/lib/rules/RuleSetCompiler') as RuleSetCompiler
+const BasicEffectRulePlugin = require('./rules/BasicEffectRulePlugin')
+const BasicMatcherRulePlugin = require('./rules/BasicMatcherRulePlugin')
+const UseEffectRulePlugin = require('./rules/UseEffectRulePlugin')
+const RuleSetCompiler = require('./rules/RuleSetCompiler') as RuleSetCompiler
 
 let objectMatcherRulePlugins = []
-const ObjectMatcherRulePlugin = require('webpack/lib/rules/ObjectMatcherRulePlugin')
+const ObjectMatcherRulePlugin = require('./rules/ObjectMatcherRulePlugin')
 objectMatcherRulePlugins.push(
   new ObjectMatcherRulePlugin('assert', 'assertions'),
   new ObjectMatcherRulePlugin('descriptionData')
