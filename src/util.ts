@@ -1,4 +1,4 @@
-import type { Compiler, LoaderContext } from 'webpack'
+import type { Compiler, LoaderContext } from '@rspack/core'
 import qs from 'querystring'
 import type { SFCDescriptor, CompilerOptions } from 'vue/compiler-sfc'
 import type { VueLoaderOptions } from '.'

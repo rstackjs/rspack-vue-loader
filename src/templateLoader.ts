@@ -1,4 +1,4 @@
-import type { LoaderDefinitionFunction } from 'webpack'
+import type { LoaderDefinitionFunction } from '@rspack/core'
 import * as qs from 'querystring'
 import { VueLoaderOptions } from './'
 import { formatError } from './formatError'

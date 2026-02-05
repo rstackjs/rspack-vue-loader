@@ -1,4 +1,4 @@
-import type { LoaderDefinitionFunction } from 'webpack'
+import type { LoaderDefinitionFunction } from '@rspack/core'
 
 const StyleInineLoader: LoaderDefinitionFunction = function (source) {
   // TODO minify this?

@@ -1,4 +1,4 @@
-import type { LoaderContext } from 'webpack'
+import type { LoaderContext } from '@rspack/core'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import * as qs from 'querystring'
