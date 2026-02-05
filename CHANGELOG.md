@@ -1,3 +1,12 @@
+# [17.5.0](https://github.com/rstackjs/rspack-vue-loader/compare/v17.4.5...v17.5.0) (2026-02-05)
+
+
+### Bug Fixes
+
+* import types from @rspack/core ([#14](https://github.com/rstackjs/rspack-vue-loader/issues/14)) ([37c5006](https://github.com/rstackjs/rspack-vue-loader/commit/37c50060f736e0d1d464bc10c08ff520590aa873))
+* no longer depend on webpack ([#16](https://github.com/rstackjs/rspack-vue-loader/issues/16)) ([b7e6813](https://github.com/rstackjs/rspack-vue-loader/commit/b7e6813e53f515a0f908cf6f22b2c4486e22367c))
+* remove unused watchpack dependency ([#15](https://github.com/rstackjs/rspack-vue-loader/issues/15)) ([8355673](https://github.com/rstackjs/rspack-vue-loader/commit/8355673eb8917dab58524cc755b8af9331d6d8ce))
+
 ## [17.4.5](https://github.com/rspack-contrib/rspack-vue-loader/compare/v17.4.2...v17.4.5) (2026-01-12)
 
 
