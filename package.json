@@ -43,7 +43,7 @@
   },
   "peerDependenciesMeta": {
     "@rspack/core": {
-      "optional": false
+      "optional": true
     },
     "@vue/compiler-sfc": {
       "optional": true
