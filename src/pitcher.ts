@@ -1,4 +1,4 @@
-import type { LoaderDefinitionFunction, LoaderContext } from 'webpack'
+import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
 import { getOptions, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'

@@ -1,5 +1,5 @@
 import * as qs from 'querystring'
-import type { LoaderDefinitionFunction } from 'webpack'
+import type { LoaderDefinitionFunction } from '@rspack/core'
 import { compiler } from './compiler'
 
 const { compileStyle } = compiler
