@@ -75,6 +75,7 @@ export function resolveScript(
         },
         transformAssetUrls: options.transformAssetUrls || true,
       },
+      vapor: descriptor.vapor,
     })
   } catch (e) {
     loaderContext.emitError(e)
