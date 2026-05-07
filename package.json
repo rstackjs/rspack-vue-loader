@@ -19,8 +19,9 @@
     "dev-example": "node example/devServer.js --config example/webpack.config.js --inline --hot",
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
-    "lint": "prettier --write --parser typescript \"{src,test}/**/*.{j,t}s\"",
-    "prepublishOnly": "tsc && conventional-changelog -p angular -i CHANGELOG.md -s -r 2"
+    "lint": "rslint",
+    "prepublishOnly": "tsc && conventional-changelog -p angular -i CHANGELOG.md -s -r 2",
+    "lint:write": "rslint --fix"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
@@ -56,6 +57,7 @@
     "@babel/core": "^7.7.7",
     "@babel/preset-env": "^7.11.5",
     "@intlify/vue-i18n-loader": "^3.0.0",
+    "@rslint/core": "^0.5.1",
     "@rspack/core": "^1.7.5",
     "@rstest/core": "^0.7.9",
     "@types/cssesc": "^3.0.2",
