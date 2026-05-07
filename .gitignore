@@ -7,4 +7,5 @@ link.sh
 .cache
 TODOs.md
 coverage
-.vscode
+.vscode/*
+!.vscode/extensions.json

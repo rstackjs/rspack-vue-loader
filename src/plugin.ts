@@ -14,7 +14,7 @@ const BasicMatcherRulePlugin = require('./rules/BasicMatcherRulePlugin')
 const UseEffectRulePlugin = require('./rules/UseEffectRulePlugin')
 const RuleSetCompiler = require('./rules/RuleSetCompiler') as RuleSetCompiler
 
-let objectMatcherRulePlugins = []
+const objectMatcherRulePlugins = []
 const ObjectMatcherRulePlugin = require('./rules/ObjectMatcherRulePlugin')
 objectMatcherRulePlugins.push(
   new ObjectMatcherRulePlugin('assert', 'assertions'),
