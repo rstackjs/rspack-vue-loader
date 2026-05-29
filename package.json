@@ -20,8 +20,9 @@
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
     "lint": "rslint",
-    "prepublishOnly": "tsc && conventional-changelog -p angular -i CHANGELOG.md -s -r 2",
-    "lint:write": "rslint --fix"
+    "prepublishOnly": "tsc",
+    "lint:write": "rslint --fix",
+    "bump": "pnpx bumpp"
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
@@ -34,7 +35,7 @@
       "prettier --parser=typescript --write"
     ]
   },
-  "packageManager": "pnpm@11.1.2",
+  "packageManager": "pnpm@11.3.0",
   "dependencies": {
     "@rspack/lite-tapable": "^1.1.0",
     "chalk": "^4.1.0"
@@ -67,7 +68,6 @@
     "@types/webpack-merge": "^4.1.5",
     "babel-loader": "^8.1.0",
     "cache-loader": "^4.1.0",
-    "conventional-changelog-cli": "^2.1.1",
     "css-loader": "^4.3.0",
     "cssesc": "^3.0.0",
     "file-loader": "^6.1.0",
