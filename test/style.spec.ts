@@ -32,7 +32,7 @@ test('scoped style', async () => {
   )
 
   expect(style).toContain(`.test[${scopeId}] {\n  color: yellow;\n}`)
-  expect(style).toContain(`.test[${scopeId}]:after {\n  content: \'bye!\';\n}`)
+  expect(style).toContain(`.test[${scopeId}]:after {\n  content: 'bye!';\n}`)
   expect(style).toContain(`h1[${scopeId}] {\n  color: green;\n}`)
   // scoped keyframes
   // note: vue 3 uses short ids for keyframes

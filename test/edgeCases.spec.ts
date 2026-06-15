@@ -252,7 +252,7 @@ test('should pass correct options to template compiler', async () => {
       }
       config.module.rules.push(
         ...Array.from({ length: 10 }).map((_, i) => ({
-          test: new RegExp(`\.dummy${i}`),
+          test: new RegExp(`\\.dummy${i}`),
           loader: 'null-loader',
           options: { dummyRule: i },
         }))

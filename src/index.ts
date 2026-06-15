@@ -139,7 +139,7 @@ export default function loader(
   // module id for scoped CSS & hot-reload
   const rawShortFilePath = path
     .relative(rootContext || process.cwd(), filename)
-    .replace(/^(\.\.[\/\\])+/, '')
+    .replace(/^(\.\.[/\\])+/, '')
   const shortFilePath = rawShortFilePath.replace(/\\/g, '/')
   const id = hash(
     isProduction
@@ -181,7 +181,7 @@ export default function loader(
   if (script || scriptSetup) {
     const lang = script?.lang || scriptSetup?.lang
     isTS = !!(lang && /tsx?/.test(lang))
-    const externalQuery = Boolean(script && !scriptSetup && script.src)
+    const externalQuery = script && !scriptSetup && script.src
       ? `&external`
       : ``
     const src = (script && !scriptSetup && script.src) || resourcePath
@@ -211,7 +211,7 @@ export default function loader(
   const useInlineTemplate = canInlineTemplate(descriptor, isProduction)
   if (descriptor.template && !useInlineTemplate) {
     const src = descriptor.template.src || resourcePath
-    const externalQuery = Boolean(descriptor.template.src) ? `&external` : ``
+    const externalQuery = descriptor.template.src ? `&external` : ``
     const idQuery = `&id=${id}`
     const scopedQuery = hasScoped ? `&scoped=true` : ``
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
@@ -251,7 +251,7 @@ export default function loader(
         // duplicate tags when multiple components import the same css file
         const idQuery = !style.src || style.scoped ? `&id=${id}` : ``
         const inlineQuery = asCustomElement ? `&inline` : ``
-        const externalQuery = Boolean(style.src) ? `&external` : ``
+        const externalQuery = style.src ? `&external` : ``
         const query = `?vue&type=style&index=${i}${idQuery}${inlineQuery}${attrsQuery}${resourceQuery}${externalQuery}`
 
         let styleRequest
@@ -336,7 +336,7 @@ export default function loader(
             ? `&issuerPath=${qs.escape(resourcePath)}`
             : ''
 
-          const externalQuery = Boolean(block.attrs.src) ? `&external` : ``
+          const externalQuery = block.attrs.src ? `&external` : ``
           const query = `?vue&type=custom&index=${i}${blockTypeQuery}${issuerQuery}${attrsQuery}${resourceQuery}${externalQuery}`
 
           let customRequest
