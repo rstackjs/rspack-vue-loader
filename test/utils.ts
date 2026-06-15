@@ -201,7 +201,7 @@ export async function mockBundleAndRun(
 }
 
 export function normalizeNewline(input: string): string {
-  return input.replace(new RegExp('\r\n', 'g'), '\n')
+  return input.split('\r\n').join('\n')
 }
 
 // see the logic at src/index.ts

@@ -58,7 +58,7 @@
     "@babel/core": "^7.7.7",
     "@babel/preset-env": "^7.11.5",
     "@intlify/vue-i18n-loader": "^3.0.0",
-    "@rslint/core": "^0.5.1",
+    "@rslint/core": "^0.6.1",
     "@rspack/core": "^1.7.5",
     "@rstest/core": "^0.7.9",
     "@types/cssesc": "^3.0.2",
