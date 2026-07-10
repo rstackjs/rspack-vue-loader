@@ -2,7 +2,7 @@ import type { LoaderContext } from '@rspack/core'
 import type { SFCDescriptor } from 'vue/compiler-sfc'
 import type { ParsedUrlQuery } from 'querystring'
 import { resolveScript } from './resolveScript'
-import type { VueLoaderOptions } from 'src'
+import type { VueLoaderOptions } from '.'
 
 // Cache for storing previous content and sourcemap to avoid unnecessary HMR updates
 // when only sourcemap changes but content remains the same

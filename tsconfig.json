@@ -1,20 +1,16 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "dist",
-    "sourceMap": false,
-    "target": "es2015",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "target": "ES2023",
+    "types": ["node"],
+    "lib": ["DOM", "ESNext"],
     "declaration": true,
+    "isolatedModules": true,
     "allowJs": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "removeComments": false,
     "skipLibCheck": true,
-    "lib": ["es6", "es7", "DOM"]
+    "module": "nodenext",
+    "moduleResolution": "nodenext"
   },
   "include": ["src"]
 }

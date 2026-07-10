@@ -1,7 +1,7 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
 import { getOptions, stringifyRequest } from './util'
-import { VueLoaderOptions } from '.'
+import type { VueLoaderOptions } from '.'
 
 const selfPath = require.resolve('./index')
 // const templateLoaderPath = require.resolve('./templateLoader')
@@ -21,8 +21,8 @@ const pitcher: LoaderDefinitionFunction = (code) => code
 
 // This pitching loader is responsible for intercepting all vue block requests
 // and transform it into appropriate requests.
-export const pitch = function () {
-  const context = this as LoaderContext<VueLoaderOptions>
+export const pitch = function (this: LoaderContext<VueLoaderOptions>) {
+  const context = this
   const rawLoaders = context.loaders.filter(isNotPitcher)
   let loaders = rawLoaders
 

@@ -1,14 +1,21 @@
 import type { LoaderContext } from '@rspack/core'
+import { existsSync, readFileSync, realpathSync } from 'fs'
 import type {
   SFCDescriptor,
   SFCScriptBlock,
   TemplateCompiler,
 } from 'vue/compiler-sfc'
-import type { VueLoaderOptions } from 'src'
+import type { VueLoaderOptions } from '.'
 import { resolveTemplateTSOptions } from './util'
 import { compiler } from './compiler'
 
 const { compileScript } = compiler
+const nodeFs = {
+  fileExists: existsSync,
+  readFile: (file: string) => readFileSync(file, 'utf-8'),
+  realpath: (file: string) => realpathSync(file),
+}
+
 export const clientCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 const serverCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 
@@ -60,6 +67,7 @@ export function resolveScript(
     resolved = compileScript(descriptor, {
       id: scopeId,
       isProd,
+      fs: nodeFs,
       inlineTemplate: enableInline,
       // @ts-ignore this has been removed in 3.4
       reactivityTransform: options.reactivityTransform,
@@ -77,7 +85,7 @@ export function resolveScript(
       },
     })
   } catch (e) {
-    loaderContext.emitError(e)
+    loaderContext.emitError(e instanceof Error ? e : new Error(String(e)))
   }
 
   if (!isProd && resolved?.deps) {

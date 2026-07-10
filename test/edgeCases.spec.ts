@@ -158,7 +158,7 @@ test('usage with null-loader', async () => {
 
 // #1278
 test('proper dedupe on src-imports with options', async () => {
-  const tsLoaderPath = require.resolve('ts-loader-v9')
+  const babelLoaderPath = require.resolve('babel-loader')
   const result = await mockBundleAndRun({
     entry: 'ts.vue',
     resolve: {
@@ -168,8 +168,15 @@ test('proper dedupe on src-imports with options', async () => {
       rules: [
         {
           test: /\.ts$/,
-          loader: tsLoaderPath,
-          options: { appendTsSuffixTo: [/\.vue$/] },
+          loader: babelLoaderPath,
+          options: {
+            presets: [
+              [
+                require.resolve('@babel/preset-typescript'),
+                { allExtensions: true },
+              ],
+            ],
+          },
         },
       ],
     },

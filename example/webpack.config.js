@@ -79,10 +79,14 @@ module.exports = (env = {}) => {
             test: /\.ts$/,
             use: [
               {
-                loader: require.resolve('ts-loader-v9'),
+                loader: require.resolve('babel-loader'),
                 options: {
-                  transpileOnly: true,
-                  appendTsSuffixTo: [/\.vue$/],
+                  presets: [
+                    [
+                      require.resolve('@babel/preset-typescript'),
+                      { allExtensions: true },
+                    ],
+                  ],
                 },
               },
             ],

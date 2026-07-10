@@ -7,6 +7,9 @@ import { fs as mfs } from 'memfs'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
 import type { VueLoaderOptions } from 'rspack-vue-loader'
+import { registerTS } from 'vue/compiler-sfc'
+
+registerTS(() => require('typescript-v6'))
 
 function hash(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex').substring(0, 8)
@@ -43,10 +46,14 @@ const baseConfig: webpack.Configuration = {
       },
       {
         test: /\.ts$/,
-        loader: require.resolve('ts-loader-v9'),
+        loader: require.resolve('babel-loader'),
         options: {
-          transpileOnly: true,
-          appendTsSuffixTo: [/\.vue$/],
+          presets: [
+            [
+              require.resolve('@babel/preset-typescript'),
+              { allExtensions: true },
+            ],
+          ],
         },
       },
     ],
