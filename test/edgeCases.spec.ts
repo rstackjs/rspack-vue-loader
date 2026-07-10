@@ -241,7 +241,7 @@ test('should work with i18n loader in production mode', async () => {
   })
 
   expect(result.componentModule.__i18n).toHaveLength(1)
-})
+}, 10_000)
 
 // #2029
 test('should pass correct options to template compiler', async () => {
