@@ -37,7 +37,7 @@ test('vue rule with include', async () => {
   const result = await mockBundleAndRun({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('vue')
       )
       config.module.rules[i] = {
@@ -80,7 +80,7 @@ test('normalize multiple use + options', async () => {
   await bundle({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('vue')
       )
       config!.module!.rules[i] = {
@@ -95,7 +95,7 @@ test('should not duplicate css modules value imports', async () => {
   const { window, exports } = await mockBundleAndRun({
     entry: './test/fixtures/duplicate-cssm.js',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('css')
       )
       config.module.rules[i] = {
@@ -145,7 +145,7 @@ test('usage with null-loader', async () => {
   await mockBundleAndRun({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('css')
       )
       config.module.rules[i] = {

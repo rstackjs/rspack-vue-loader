@@ -147,7 +147,7 @@ test('CSS Modules', async () => {
     // animation name
     const match = style.match(/@keyframes\s+(\S+)\s+{/)
     expect(match).toHaveLength(2)
-    const animationName = match[1]
+    const animationName = match![1]
     expect(animationName).not.toBe('fade')
     expect(style).toContain('animation: ' + animationName + ' 1s;')
 

@@ -59,7 +59,7 @@ const baseConfig: webpack.Configuration = {
     ],
   },
   plugins: [
-    new VueLoaderPlugin(),
+    new VueLoaderPlugin() as any,
     new webpack.DefinePlugin({
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
@@ -188,8 +188,9 @@ export async function mockBundleAndRun(
   try {
     dom.window.eval(code)
   } catch (e) {
-    console.error(`JSDOM error:\n${e.stack}`)
-    throw new Error(e)
+    const error = e instanceof Error ? e : new Error(String(e))
+    console.error(`JSDOM error:\n${error.stack}`)
+    throw error
   }
 
   const { window } = dom
