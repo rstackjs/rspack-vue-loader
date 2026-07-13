@@ -175,7 +175,8 @@ export default function loader(
   const propsToAttach: [string, string][] = []
 
   // script
-  let scriptImport = `const script = {}`
+  const vaporFlag = descriptor.vapor ? '__vapor: true' : ''
+  let scriptImport = `const script = { ${vaporFlag} }`
   let isTS = false
   const { script, scriptSetup } = descriptor
   if (script || scriptSetup) {

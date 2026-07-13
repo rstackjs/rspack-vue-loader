@@ -67,6 +67,7 @@ const TemplateLoader: LoaderDefinitionFunction = function (source, inMap: any) {
       ...resolveTemplateTSOptions(descriptor, options),
     },
     transformAssetUrls: options.transformAssetUrls || true,
+    vapor: descriptor.vapor,
   })
 
   // tips
