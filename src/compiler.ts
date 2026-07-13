@@ -2,6 +2,15 @@
 declare module 'vue/compiler-sfc' {
   interface SFCDescriptor {
     id: string
+    vapor?: boolean
+  }
+
+  interface SFCScriptCompileOptions {
+    vapor?: boolean
+  }
+
+  interface SFCTemplateCompileOptions {
+    vapor?: boolean
   }
 }
 
