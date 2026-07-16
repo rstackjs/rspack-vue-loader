@@ -4,6 +4,7 @@
     :class="[
       $style.foo,
       defaultModule.foo,
+      $style.default,
       classes.bar,
       scopedClasses.scoped,
       scssClasses.scss,
@@ -31,6 +32,10 @@ export default {
 <style module>
 .foo {
   color: red;
+}
+
+.default {
+  background: black;
 }
 </style>
 

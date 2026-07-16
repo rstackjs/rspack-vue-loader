@@ -7,7 +7,7 @@ export function genCSSModulesCode(
 ): string {
   const styleVar = `style${index}`
   const styleNamespaceVar = `${styleVar}Namespace`
-  const normalizedStyle = `${styleNamespaceVar}.default || ${styleNamespaceVar}`
+  const normalizedStyle = `typeof ${styleNamespaceVar}.default === "object" ? ${styleNamespaceVar}.default : ${styleNamespaceVar}`
   let code = `\nimport * as ${styleNamespaceVar} from ${request}`
   code += `\nconst ${styleVar} = ${normalizedStyle}`
 
