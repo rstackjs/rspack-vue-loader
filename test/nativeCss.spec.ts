@@ -25,6 +25,19 @@ test('native CSS supports default, named, scoped, and SCSS modules', async () =>
     nativeCssConfig({ entry: 'native-css-modules.vue' })
   )
 
+  const scssModule: any = Array.from(stats.compilation.modules).find(
+    (module: any) =>
+      module.resource?.includes('native-css-modules.vue') &&
+      module.resource?.includes('index=3')
+  )
+  expect(scssModule).toBeDefined()
+  expect(
+    scssModule.request.match(/sass-loader\/dist\/cjs\/index\.js/g)
+  ).toHaveLength(1)
+  expect(scssModule.request.indexOf('stylePostLoader')).toBeLessThan(
+    scssModule.request.indexOf('sass-loader')
+  )
+
   const mappings = [
     instance.$style.foo,
     instance.defaultModule.foo,
