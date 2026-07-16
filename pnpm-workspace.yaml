@@ -1,4 +1,5 @@
 allowBuilds:
+  '@parcel/watcher': false
   core-js: false
   fsevents: false
   yorkie: false

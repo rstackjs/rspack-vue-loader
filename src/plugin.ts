@@ -244,7 +244,6 @@ class VueLoaderPlugin {
         ]
       : []
 
-
     // replace original rules
     if (enableInlineMatchResource) {
       // Match rules using `vue-loader`
@@ -345,7 +344,6 @@ const isVueStyleModule = (query?: string): boolean => {
   const parsed = qs.parse(query!.slice(1))
   return parsed.module != null
 }
-
 
 const matcherCache = new WeakMap<RawRule, RuleSet>()
 

@@ -48,7 +48,7 @@ The existing pitcher injection before `css-loader` remains unchanged in loader m
 `genCSSModulesCode()` imports each style module as a namespace:
 
 ```js
-import * as style0Namespace from "generated-style-module"
+import * as style0Namespace from 'generated-style-module'
 const style0 = style0Namespace.default || style0Namespace
 ```
 
@@ -94,4 +94,3 @@ The final verification runs the complete Rspack test suite in loader mode and in
 ## Compatibility and Failure Handling
 
 If native CSS is enabled without `experimentalInlineMatchResource`, the existing explicit compilation error remains. Inline custom-element styles remain unsupported with native CSS and keep an explicit error. The native rules use parsed resource queries rather than substring-only matching to avoid affecting unrelated resources whose query text happens to contain `vue`, `style`, or `module`.
-

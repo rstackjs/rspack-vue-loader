@@ -9,9 +9,7 @@ test('normalizes default and namespace CSS module exports', () => {
     false
   )
 
-  expect(code).toContain(
-    'import * as style0Namespace from "./style.css"'
-  )
+  expect(code).toContain('import * as style0Namespace from "./style.css"')
   expect(code).toContain(
     'const style0 = style0Namespace.default || style0Namespace'
   )
@@ -31,7 +29,5 @@ test('refreshes named CSS module mappings during HMR', () => {
   expect(code).toContain(
     'cssModules["classes"] = style2Namespace.default || style2Namespace'
   )
-  expect(code).toContain(
-    '__VUE_HMR_RUNTIME__.rerender("component-id")'
-  )
+  expect(code).toContain('__VUE_HMR_RUNTIME__.rerender("component-id")')
 })

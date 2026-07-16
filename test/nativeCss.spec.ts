@@ -16,7 +16,9 @@ function readCssAssets(stats: any): string {
   expect(assets.length).toBeGreaterThan(0)
 
   return normalizeNewline(
-    assets.map((name: string) => mfs.readFileSync(`/${name}`, 'utf8')).join('\n')
+    assets
+      .map((name: string) => mfs.readFileSync(`/${name}`, 'utf8'))
+      .join('\n')
   )
 }
 
@@ -54,9 +56,12 @@ test('native CSS supports default, named, scoped, and SCSS modules', async () =>
   })
 
   const css = readCssAssets(stats)
-  mappings.slice(0, 1).concat(mappings.slice(2)).forEach((className) => {
-    expect(css).toContain(`.${cssesc(className, { isIdentifier: true })}`)
-  })
+  mappings
+    .slice(0, 1)
+    .concat(mappings.slice(2))
+    .forEach((className) => {
+      expect(css).toContain(`.${cssesc(className, { isIdentifier: true })}`)
+    })
   expect(css).toContain(`data-v-${genId('native-css-modules.vue')}`)
   expect(css).toContain('color: rebeccapurple')
 })

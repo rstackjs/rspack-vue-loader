@@ -1,10 +1,6 @@
 import * as path from 'path'
 import * as crypto from 'crypto'
-import {
-  rspack as webpack,
-  type Configuration,
-  type Stats,
-} from '@rspack/core'
+import { rspack as webpack, type Configuration, type Stats } from '@rspack/core'
 import merge from 'webpack-merge'
 // import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { fs as mfs } from 'memfs'

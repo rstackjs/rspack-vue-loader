@@ -16,6 +16,8 @@
     "test": "NODE_OPTIONS=--openssl-legacy-provider rstest",
     "pretest:match-resource": "tsc",
     "test:match-resource": "INLINE_MATCH_RESOURCE=true NODE_OPTIONS=--openssl-legacy-provider rstest",
+    "pretest:native-css": "tsc",
+    "test:native-css": "NODE_OPTIONS=--openssl-legacy-provider rstest test/nativeCss.spec.ts test/nativeCssBuild.spec.ts test/cssModulesCode.spec.ts",
     "dev-example": "node example/devServer.js --config example/webpack.config.js --inline --hot",
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
