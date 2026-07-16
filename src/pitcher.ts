@@ -73,27 +73,18 @@ export const pitch = function () {
         return ''
       }
 
-      if (query.inline || query.module) {
+      if (query.inline) {
         context.emitError(
           new Error(
-            '`inline` or `module` is currently not supported with `experiments.css` enabled'
+            '`inline` is currently not supported with `experiments.css` enabled'
           )
         )
         return ''
       }
 
-      const loaderString = [stylePostLoaderPath, ...loaders]
-        .map((loader) => {
-          return typeof loader === 'string' ? loader : loader.request
-        })
-        .join('!')
-      const styleRequest = stringifyRequest(
-        context,
-        `${context.resourcePath}${query.lang ? `.${query.lang}` : ''}${
-          context.resourceQuery
-        }!=!-!${loaderString}!${context.resource}`
-      )
-      return `@import ${styleRequest};`
+      // Let the original inline match-resource request finish so Rspack's
+      // native CSS parser consumes the transformed style block.
+      return
     }
     const cssLoaderIndex = loaders.findIndex(isCSSLoader)
     if (cssLoaderIndex > -1) {
