@@ -9,7 +9,7 @@ import {
   DEFAULT_VUE_USE,
 } from './utils'
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { CssExtractRspackPlugin } = require('@rspack/core')
 
 test('support chaining with other loaders', async () => {
   const { componentModule } = await mockBundleAndRun({
@@ -103,16 +103,16 @@ test('extract CSS', async () => {
         },
         {
           test: /\.css$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: [CssExtractRspackPlugin.loader, 'css-loader'],
         },
         {
           test: /\.stylus$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader'],
+          use: [CssExtractRspackPlugin.loader, 'css-loader', 'stylus-loader'],
         },
       ]
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new CssExtractRspackPlugin({
         filename: 'test.output.css',
       }),
     ],
@@ -137,12 +137,12 @@ test('extract CSS with code spliting', async () => {
         },
         {
           test: /\.css$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: [CssExtractRspackPlugin.loader, 'css-loader'],
         },
       ]
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new CssExtractRspackPlugin({
         filename: 'test.output.css',
       }),
     ],

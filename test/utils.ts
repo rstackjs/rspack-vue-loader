@@ -1,6 +1,10 @@
 import * as path from 'path'
 import * as crypto from 'crypto'
-import webpack from 'webpack'
+import {
+  rspack as webpack,
+  type Configuration,
+  type Stats,
+} from '@rspack/core'
 import merge from 'webpack-merge'
 // import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { fs as mfs } from 'memfs'
@@ -19,7 +23,7 @@ export const DEFAULT_VUE_USE = {
   },
 }
 
-const baseConfig: webpack.Configuration = {
+const baseConfig: Configuration = {
   mode: 'development',
   devtool: false,
   output: {
@@ -64,9 +68,9 @@ const baseConfig: webpack.Configuration = {
   ],
 }
 
-type BundleOptions = webpack.Configuration & {
+type BundleOptions = Configuration & {
   vue?: VueLoaderOptions
-  modify?: (config: webpack.Configuration) => void
+  modify?: (config: Configuration) => void
 }
 
 export function bundle(
@@ -74,7 +78,7 @@ export function bundle(
   wontThrowError?: boolean
 ): Promise<{
   code: string
-  stats: webpack.Stats
+  stats: Stats
 }> {
   let config: BundleOptions = merge({}, baseConfig, options)
 
