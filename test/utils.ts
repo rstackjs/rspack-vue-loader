@@ -73,6 +73,30 @@ type BundleOptions = Configuration & {
   modify?: (config: Configuration) => void
 }
 
+export function nativeCssConfig(options: BundleOptions): BundleOptions {
+  return merge(
+    {},
+    {
+      experiments: { css: true },
+      vue: { experimentalInlineMatchResource: true },
+      module: {
+        rules: [
+          {
+            test: /\.css$/,
+            type: 'css',
+          },
+          {
+            test: /\.scss$/,
+            type: 'css',
+            use: ['sass-loader'],
+          },
+        ],
+      },
+    } satisfies BundleOptions,
+    options
+  )
+}
+
 export function bundle(
   options: BundleOptions,
   wontThrowError?: boolean
