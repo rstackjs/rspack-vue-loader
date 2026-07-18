@@ -167,13 +167,24 @@ class VueLoaderPlugin {
     const enableInlineMatchResource =
       vueLoaderOptions.experimentalInlineMatchResource
 
+    const enableNativeCSS = !!compiler.options.experiments.css
     // for each user rule (except the vue rule), create a cloned rule
     // that targets the corresponding language blocks in *.vue files.
     const refs = new Map()
     const clonedRules = rules
       .filter((r) => r !== rawVueRule)
       .map((rawRule) =>
-        cloneRule(rawRule, refs, langBlockRuleCheck, langBlockRuleResource)
+        cloneRule(
+          rawRule,
+          refs,
+          (query, rule) =>
+            !(
+              enableNativeCSS &&
+              enableInlineMatchResource &&
+              query.type === 'style'
+            ) && langBlockRuleCheck(query, rule),
+          langBlockRuleResource
+        )
       )
 
     // fix conflict with config.loader and config.options when using config.use
@@ -219,6 +230,19 @@ class VueLoaderPlugin {
       },
       options: vueLoaderOptions,
     }
+    const nativeCssRules: RawRule[] = enableNativeCSS
+      ? [
+          {
+            enforce: 'post',
+            loader: require.resolve('./stylePostLoader'),
+            resourceQuery: isVueStyle,
+          },
+          {
+            resourceQuery: isVueStyleModule,
+            type: 'css/module',
+          },
+        ]
+      : []
 
     // replace original rules
     if (enableInlineMatchResource) {
@@ -253,6 +277,7 @@ class VueLoaderPlugin {
         ...rules.filter((rule) => !vueLoaderRules.includes(rule)),
         templateCompilerRule,
         ...clonedRules,
+        ...nativeCssRules,
         ...vueLoaderRules,
       ]
     } else {
@@ -261,6 +286,7 @@ class VueLoaderPlugin {
         ...jsRulesForRenderFn,
         templateCompilerRule,
         ...clonedRules,
+        ...nativeCssRules,
         ...rules,
       ]
     }
@@ -302,6 +328,21 @@ class VueLoaderPlugin {
       })
     }
   }
+}
+const isVueStyle = (query?: string): boolean => {
+  if (!query) {
+    return false
+  }
+  const parsed = qs.parse(query.slice(1))
+  return parsed.vue != null && parsed.type === 'style'
+}
+
+const isVueStyleModule = (query?: string): boolean => {
+  if (!isVueStyle(query)) {
+    return false
+  }
+  const parsed = qs.parse(query!.slice(1))
+  return parsed.module != null
 }
 
 const matcherCache = new WeakMap<RawRule, RuleSet>()

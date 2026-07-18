@@ -6,7 +6,10 @@ export function genCSSModulesCode(
   needsHotReload: boolean
 ): string {
   const styleVar = `style${index}`
-  let code = `\nimport ${styleVar} from ${request}`
+  const styleNamespaceVar = `${styleVar}Namespace`
+  const normalizedStyle = `typeof ${styleNamespaceVar}.default === "object" ? ${styleNamespaceVar}.default : ${styleNamespaceVar}`
+  let code = `\nimport * as ${styleNamespaceVar} from ${request}`
+  code += `\nconst ${styleVar} = ${normalizedStyle}`
 
   // inject variable
   const name = typeof moduleName === 'string' ? moduleName : '$style'
@@ -16,7 +19,7 @@ export function genCSSModulesCode(
     code += `
 if (module.hot) {
   module.hot.accept(${request}, () => {
-    cssModules["${name}"] = ${styleVar}
+    cssModules["${name}"] = ${normalizedStyle}
     __VUE_HMR_RUNTIME__.rerender("${id}")
   })
 }`
