@@ -9,3 +9,4 @@ TODOs.md
 coverage
 .vscode/*
 !.vscode/extensions.json
+.idea

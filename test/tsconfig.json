@@ -17,7 +17,8 @@
     "lib": ["es6", "es7", "DOM"],
     "types": ["@rstest/core/globals"],
     "paths": {
-      "rspack-vue-loader": ["../src/index.ts"]
+      "rspack-vue-loader": ["../src/index.ts"],
+      "rspack-vue-loader/pitcher": ["../src/pitcher.ts"]
     }
   }
 }

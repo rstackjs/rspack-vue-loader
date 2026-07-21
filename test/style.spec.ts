@@ -1,10 +1,60 @@
 import cssesc from 'cssesc'
 import {
+  bundle,
   mockBundleAndRun,
+  mfs,
   genId,
   normalizeNewline,
   DEFAULT_VUE_USE,
 } from './utils'
+
+const builtinCssOptions = {
+  experiments: {
+    css: true,
+  },
+  vue: {
+    experimentalInlineMatchResource: true,
+  },
+}
+
+test('built-in CSS supports normal and scoped styles', async () => {
+  const { stats } = await bundle({
+    ...builtinCssOptions,
+    entry: 'scoped-css.vue',
+  })
+  const cssAssets = stats
+    .toJson({ assets: true })
+    .assets?.filter((asset) => asset.name.endsWith('.css'))
+
+  expect(cssAssets?.length).toBeGreaterThan(0)
+  const css = normalizeNewline(
+    cssAssets!
+      .map((asset) => mfs.readFileSync(`/${asset.name}`).toString())
+      .join('\n')
+  )
+  const scopeId = `data-v-${genId('scoped-css.vue')}`
+  expect(css).toContain(`.test[${scopeId}]`)
+})
+
+test('built-in CSS supports CSS modules', async () => {
+  const { instance } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules-extend.vue',
+  })
+
+  expect(instance.$style.red).toBeDefined()
+  expect(instance.$el.className).toBe(instance.$style.red)
+})
+
+test('built-in CSS exports inline styles for custom elements', async () => {
+  const { componentModule } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'custom-element.ce.vue',
+  })
+
+  expect(componentModule.styles).toHaveLength(1)
+  expect(componentModule.styles[0]).toContain('color: red')
+})
 
 test('scoped style', async () => {
   const { window, instance, componentModule } = await mockBundleAndRun({
