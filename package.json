@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
+    "prepare": "tsc",
     "pretest": "tsc",
     "test": "NODE_OPTIONS=--openssl-legacy-provider rstest",
     "pretest:match-resource": "tsc",
