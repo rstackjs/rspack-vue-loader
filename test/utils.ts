@@ -1,8 +1,8 @@
 import * as path from 'path'
 import * as crypto from 'crypto'
-import webpack from 'webpack'
-import merge from 'webpack-merge'
-// import MiniCssExtractPlugin from 'mini-css-extract-plugin'
+import rspack from '@rspack/core'
+import type { Configuration, Stats } from '@rspack/core'
+import { merge } from 'rspack-merge'
 import { fs as mfs } from 'memfs'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
@@ -19,7 +19,7 @@ export const DEFAULT_VUE_USE = {
   },
 }
 
-const baseConfig: webpack.Configuration = {
+const baseConfig: Configuration = {
   mode: 'development',
   devtool: false,
   output: {
@@ -53,20 +53,17 @@ const baseConfig: webpack.Configuration = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new webpack.DefinePlugin({
+    new rspack.DefinePlugin({
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
     }),
-    // new MiniCssExtractPlugin({
-    //   filename: '[name].css',
-    // }),
   ],
 }
 
-type BundleOptions = webpack.Configuration & {
+type BundleOptions = Configuration & {
   vue?: VueLoaderOptions
-  modify?: (config: webpack.Configuration) => void
+  modify?: (config: Configuration) => void
 }
 
 export function bundle(
@@ -74,27 +71,50 @@ export function bundle(
   wontThrowError?: boolean
 ): Promise<{
   code: string
-  stats: webpack.Stats
+  stats: Stats
 }> {
-  let config: BundleOptions = merge({}, baseConfig, options)
+  const { vue, modify, ...rspackOptions } = options
+  let config: BundleOptions = merge({}, baseConfig, rspackOptions)
 
   if (!options.experiments?.css) {
     config.module?.rules?.push({
       test: /\.css$/,
       use: ['style-loader', 'css-loader'],
     })
+  } else {
+    config.module?.rules?.push({
+      test: /\.css$/,
+      oneOf: [
+        {
+          resourceQuery: /inline/,
+          type: 'css/auto',
+          parser: {
+            exportType: 'text',
+          },
+        },
+        {
+          resourceQuery: /module/,
+          type: 'css/module',
+          parser: {
+            namedExports: false,
+          },
+        },
+        {
+          type: 'css/auto',
+        },
+      ],
+    })
   }
 
-  if (config.vue && config.module) {
+  if (vue && config.module) {
     const vueOptions = {
       // Test experimental inline match resource by default
       experimentalInlineMatchResource: Boolean(
         process.env.INLINE_MATCH_RESOURCE
       ),
-      ...options.vue,
+      ...vue,
     }
 
-    delete config.vue
     const vueIndex = config.module.rules!.findIndex(
       (r: any) => r.test instanceof RegExp && r.test.test('.vue')
     )
@@ -104,9 +124,11 @@ export function bundle(
     if (vueRule && typeof vueRule === 'object' && Array.isArray(vueRule.use)) {
       // Vue usually locates at the first loader
       if (typeof vueRule.use?.[0] === 'object') {
-        vueRule.use[0] = Object.assign({}, vueRule.use[0], {
-          options: vueOptions,
-        })
+        vueRule.use[0].options = Object.assign(
+          {},
+          vueRule.use[0].options,
+          vueOptions
+        )
       }
     } else {
       config.module.rules![vueIndex] = Object.assign({}, vueRule, {
@@ -127,21 +149,20 @@ export function bundle(
     })
   }
 
-  if (options.modify) {
-    delete config.modify
-    options.modify(config)
+  if (modify) {
+    modify(config)
   }
 
-  const webpackCompiler = webpack(config)
-  webpackCompiler.outputFileSystem = Object.assign(
+  const rspackCompiler = rspack(config)
+  rspackCompiler.outputFileSystem = Object.assign(
     {
       join: path.join.bind(path),
     },
     mfs
-  )
+  ) as any
 
   return new Promise((resolve, reject) => {
-    webpackCompiler.run((err, stats) => {
+    rspackCompiler.run((err, stats) => {
       const errors = stats?.compilation.errors
       if (!wontThrowError) {
         expect(err).toBeNull()
