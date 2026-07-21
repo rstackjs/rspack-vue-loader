@@ -1,0 +1,31 @@
+rstest.config.ts
+  s_12470e6c401e69::t_bdb03976dcd6b2 8
+test/advanced.spec.ts
+  s_12470e6c401e69::t_e08e5ea0136cdc 3,13,107,111-115,120,145,150
+test/fixtures/custom-element.ce.vue
+  s_12470e6c401e69::t_42e14383d9f2aa 1-9
+test/style.spec.ts
+  s_12470e6c401e69::t_2ab3095877ce06 3,5,11-58
+test/tsconfig.json
+  s_12470e6c401e69::t_37557e537c6caf 20-21
+test/utils.ts
+  s_12470e6c401e69::t_0009ea08c967f0 3-5,22,56,64,66,74,76-77,84-106,109,115,127-131,152-153,156-157,162,165
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7c642fcc7ee073c6abe956c3535ecb74b0a2ed07",
+  "prompts": {},
+  "sessions": {
+    "s_12470e6c401e69": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f829b-6cdc-7781-b255-716d7385b858",
+        "model": "unknown"
+      },
+      "human_author": "intellild <intellild@outlook.com>"
+    }
+  },
+  "attestation_metadata": {},
+  "remote_transcripts": {}
+}
