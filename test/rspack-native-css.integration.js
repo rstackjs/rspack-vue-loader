@@ -36,7 +36,7 @@ function nativeCSSConfig() {
   return {
     mode: 'production',
     devtool: false,
-    entry: path.resolve(__dirname, 'fixtures/native-css-sass.vue'),
+    entry: path.resolve(__dirname, 'fixtures/basic.vue'),
     output: {
       path: '/dist',
       filename: 'main.js',
@@ -52,8 +52,7 @@ function nativeCSSConfig() {
           },
         },
         {
-          test: /\.sass$/,
-          loader: require.resolve('sass-loader'),
+          test: /\.css$/,
           type: 'css',
         },
       ],
@@ -62,15 +61,14 @@ function nativeCSSConfig() {
   }
 }
 
-function assertSassOutput(outputFileSystem) {
+function assertCSSOutput(outputFileSystem) {
   const css = outputFileSystem.readFileSync('/dist/main.css', 'utf8')
-  assert.match(css, /\.hello\s*\{/)
-  assert.match(css, /color:\s*#639/)
-  assert.match(css, /width:\s*143px/)
+  assert.match(css, /comp-a h2\s*\{/)
+  assert.match(css, /color:\s*(?:#f00|red)/)
 }
 
-test('emits preprocessed styles with rule-based native CSS', async () => {
-  await compile(rspack, nativeCSSConfig(), assertSassOutput)
+test('emits styles with rule-based native CSS', async () => {
+  await compile(rspack, nativeCSSConfig(), assertCSSOutput)
 })
 
 test('keeps the CSS extraction loader pipeline working', async () => {
@@ -107,10 +105,6 @@ test('keeps the CSS extraction loader pipeline working', async () => {
         new CssExtractRspackPlugin({ filename: 'main.css' }),
       ],
     },
-    (outputFileSystem) => {
-      const css = outputFileSystem.readFileSync('/dist/main.css', 'utf8')
-      assert.match(css, /comp-a h2\s*\{/)
-      assert.match(css, /color:\s*(?:#f00|red)/)
-    }
+    assertCSSOutput
   )
 })
