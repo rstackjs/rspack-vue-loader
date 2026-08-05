@@ -2,8 +2,7 @@ const assert = require('node:assert/strict')
 const path = require('node:path')
 const test = require('node:test')
 const { createFsFromVolume, Volume } = require('memfs')
-const { rspack: rspackV1 } = require('@rspack/core')
-const { rspack: rspackV2 } = require('rspack-core-v2')
+const { rspack } = require('@rspack/core')
 const { VueLoaderPlugin } = require('../dist')
 
 async function compile(rspack, config, check) {
@@ -33,12 +32,11 @@ async function compile(rspack, config, check) {
   }
 }
 
-function nativeCSSConfig(experiments) {
+function nativeCSSConfig() {
   return {
     mode: 'production',
     devtool: false,
     entry: path.resolve(__dirname, 'fixtures/native-css-sass.vue'),
-    experiments,
     output: {
       path: '/dist',
       filename: 'main.js',
@@ -72,18 +70,14 @@ function assertSassOutput(outputFileSystem) {
 }
 
 test('emits preprocessed styles with rule-based native CSS', async () => {
-  await compile(rspackV2, nativeCSSConfig(undefined), assertSassOutput)
-})
-
-test('keeps experiments.css support for Rspack 1', async () => {
-  await compile(rspackV1, nativeCSSConfig({ css: true }), assertSassOutput)
+  await compile(rspack, nativeCSSConfig(), assertSassOutput)
 })
 
 test('keeps the CSS extraction loader pipeline working', async () => {
-  const CssExtractRspackPlugin = rspackV2.CssExtractRspackPlugin
+  const CssExtractRspackPlugin = rspack.CssExtractRspackPlugin
 
   await compile(
-    rspackV2,
+    rspack,
     {
       mode: 'production',
       devtool: false,
