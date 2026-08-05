@@ -1,20 +1,35 @@
-const assert = require('node:assert/strict')
-const path = require('node:path')
-const test = require('node:test')
-const { createFsFromVolume, Volume } = require('memfs')
-const { rspack } = require('@rspack/core')
-const { VueLoaderPlugin } = require('../dist')
+import * as path from 'path'
+import {
+  rspack,
+  type Configuration,
+  type OutputFileSystem,
+  type Stats,
+} from '@rspack/core'
+import { createFsFromVolume, Volume } from 'memfs'
+import { VueLoaderPlugin } from 'rspack-vue-loader'
 
-async function compile(rspack, config, check) {
+type MemoryFileSystem = ReturnType<typeof createFsFromVolume> & {
+  join: typeof path.join
+}
+
+async function compile(
+  config: Configuration,
+  check: (outputFileSystem: MemoryFileSystem) => void
+) {
   const compiler = rspack(config)
-  const outputFileSystem = createFsFromVolume(new Volume())
-  outputFileSystem.join = path.join.bind(path)
-  compiler.outputFileSystem = outputFileSystem
+  const outputFileSystem = Object.assign(createFsFromVolume(new Volume()), {
+    join: path.join.bind(path),
+  })
+  compiler.outputFileSystem = outputFileSystem as unknown as OutputFileSystem
 
-  const stats = await new Promise((resolve, reject) => {
+  const stats = await new Promise<Stats>((resolve, reject) => {
     compiler.run((error, result) => {
       if (error) {
         reject(error)
+        return
+      }
+      if (!result) {
+        reject(new Error('Rspack did not return compilation stats'))
         return
       }
       resolve(result)
@@ -22,17 +37,18 @@ async function compile(rspack, config, check) {
   })
 
   try {
-    assert.ok(stats)
-    assert.equal(stats.hasErrors(), false, stats.toString({ colors: false }))
+    if (stats.hasErrors()) {
+      throw new Error(stats.toString({ colors: false }))
+    }
     check(outputFileSystem)
   } finally {
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       compiler.close((error) => (error ? reject(error) : resolve()))
     })
   }
 }
 
-function nativeCSSConfig() {
+function nativeCSSConfig(): Configuration {
   return {
     mode: 'production',
     devtool: false,
@@ -61,21 +77,20 @@ function nativeCSSConfig() {
   }
 }
 
-function assertCSSOutput(outputFileSystem) {
+function assertCSSOutput(outputFileSystem: MemoryFileSystem) {
   const css = outputFileSystem.readFileSync('/dist/main.css', 'utf8')
-  assert.match(css, /comp-a h2\s*\{/)
-  assert.match(css, /color:\s*(?:#f00|red)/)
+  expect(css).toMatch(/comp-a h2\s*\{/)
+  expect(css).toMatch(/color:\s*(?:#f00|red)/)
 }
 
 test('emits styles with rule-based native CSS', async () => {
-  await compile(rspack, nativeCSSConfig(), assertCSSOutput)
+  await compile(nativeCSSConfig(), assertCSSOutput)
 })
 
 test('keeps the CSS extraction loader pipeline working', async () => {
   const CssExtractRspackPlugin = rspack.CssExtractRspackPlugin
 
   await compile(
-    rspack,
     {
       mode: 'production',
       devtool: false,
