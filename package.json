@@ -1,6 +1,6 @@
 {
   "name": "rspack-vue-loader",
-  "version": "17.6.1",
+  "version": "17.6.2",
   "license": "MIT",
   "author": "Evan You",
   "repository": "rstackjs/rspack-vue-loader",
