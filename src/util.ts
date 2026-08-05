@@ -4,6 +4,15 @@ import type { SFCDescriptor, CompilerOptions } from 'vue/compiler-sfc'
 import type { VueLoaderOptions } from '.'
 import * as path from 'path'
 
+export function isNativeCSSModule(type?: string) {
+  return (
+    type === 'css' ||
+    type === 'css/auto' ||
+    type === 'css/global' ||
+    type === 'css/module'
+  )
+}
+
 export function needHMR(
   vueLoaderOptions: VueLoaderOptions,
   compilerOptions: Compiler['options']

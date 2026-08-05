@@ -1,6 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
-import { getOptions, stringifyRequest } from './util'
+import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
 const selfPath = require.resolve('./index')
@@ -60,14 +60,14 @@ export const pitch = function () {
   // Inject style-post-loader before css-loader for scoped CSS and trimming
   const options = (getOptions(context) || {}) as VueLoaderOptions
   if (query.type === `style`) {
-    if (context._compiler?.options.experiments.css) {
-      // If user enables `experiments.css`, then we are trying to emit css code directly.
+    if (isNativeCSSModule(context._module?.type)) {
+      // If the current module uses native CSS, emit CSS code directly.
       // Although we can target requests like `xxx.vue?type=style` to match `type: "css"`,
       // it will make the plugin a mess.
       if (!options.experimentalInlineMatchResource) {
         context.emitError(
           new Error(
-            '`experimentalInlineMatchResource` should be enabled if `experiments.css` enabled currently'
+            '`experimentalInlineMatchResource` should be enabled when using native CSS modules'
           )
         )
         return ''
@@ -76,7 +76,7 @@ export const pitch = function () {
       if (query.inline || query.module) {
         context.emitError(
           new Error(
-            '`inline` or `module` is currently not supported with `experiments.css` enabled'
+            '`inline` or `module` is currently not supported with native CSS modules'
           )
         )
         return ''

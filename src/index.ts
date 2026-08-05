@@ -23,6 +23,7 @@ import {
   getOptions,
   stringifyRequest as _stringifyRequest,
   genMatchResource,
+  isNativeCSSModule,
 } from './util'
 
 export { VueLoaderPlugin }
@@ -165,7 +166,8 @@ export default function loader(
       options,
       loaderContext,
       incomingQuery,
-      !!options.appendExtension,
+      !!options.appendExtension ||
+        isNativeCSSModule(loaderContext._module?.type),
       needsHotReload && loaderContext.hot
     )
   }
