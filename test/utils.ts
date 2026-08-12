@@ -182,7 +182,7 @@ export async function mockBundleAndRun(
     dom.window.eval(code)
   } catch (e) {
     console.error(`JSDOM error:\n${e.stack}`)
-    throw new Error(e)
+    throw new Error(String(e), { cause: e })
   }
 
   const { window } = dom

@@ -235,7 +235,7 @@ class RuleSetCompiler {
 					matchWhenEmpty: condition(""),
 					fn: condition
 				};
-			} catch (err) {
+			} catch {
 				throw this.error(
 					path,
 					condition,

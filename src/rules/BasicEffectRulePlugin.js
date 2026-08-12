@@ -21,7 +21,7 @@ class BasicEffectRulePlugin {
 	apply(ruleSetCompiler) {
 		ruleSetCompiler.hooks.rule.tap(
 			"BasicEffectRulePlugin",
-			(path, rule, unhandledProperties, result, references) => {
+			(path, rule, unhandledProperties, result, _references) => {
 				if (unhandledProperties.has(this.ruleProperty)) {
 					unhandledProperties.delete(this.ruleProperty);
 

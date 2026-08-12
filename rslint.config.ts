@@ -11,4 +11,18 @@ export default defineConfig([
       '@typescript-eslint/no-this-alias': 'off',
     },
   },
+  {
+    files: ['example/**/*', 'test/**/*'],
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+  {
+    files: ['src/**/*.js'],
+    languageOptions: {
+      globals: {
+        require: 'readonly',
+      },
+    },
+  },
 ]);
