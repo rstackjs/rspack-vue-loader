@@ -12,9 +12,17 @@ export default defineConfig([
     },
   },
   {
-    files: ['example/**/*'],
-    rules: {
-      'no-undef': 'off',
+    files: ['example/{devServer,ssr,webpack.config}.js'],
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['example/main.js'],
+    languageOptions: {
+      globals: {
+        __IS_SSR__: 'readonly',
+      },
     },
   },
   {
