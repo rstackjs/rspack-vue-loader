@@ -189,7 +189,7 @@ class UseEffectRulePlugin {
 		);
 	}
 
-	useItemToEffects(path, item) {}
+	useItemToEffects(_path, _item) {}
 }
 
 module.exports = UseEffectRulePlugin;
