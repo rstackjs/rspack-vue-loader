@@ -1,4 +1,4 @@
-import { defineConfig, js, ts } from '@rslint/core';
+import { defineConfig, js, ts } from '@rslint/core'
 
 export default defineConfig([
   js.configs.recommended,
@@ -9,7 +9,6 @@ export default defineConfig([
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-require-imports': 'off',
       '@typescript-eslint/no-this-alias': 'off',
-      'no-undef': 'off',
     },
   },
-]);
+])
