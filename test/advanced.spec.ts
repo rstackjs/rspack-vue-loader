@@ -1,3 +1,4 @@
+import path from 'path'
 import { SourceMapConsumer } from 'source-map'
 import { fs as mfs } from 'memfs'
 import cssesc from 'cssesc'
@@ -65,6 +66,55 @@ test('expose file basename as __file in production when exposeFilename enabled',
     },
   })
   expect(componentModule.__file).toBe('basic.vue')
+})
+
+test('no __moduleIdentifier unless exposeModuleIdentifier is set', async () => {
+  const { componentModule } = await mockBundleAndRun({
+    entry: 'basic.vue',
+  })
+
+  expect(componentModule.__moduleIdentifier).toBe(undefined)
+})
+
+test('expose a hashed __moduleIdentifier when exposeModuleIdentifier is true', async () => {
+  const { componentModule } = await mockBundleAndRun({
+    entry: 'basic.vue',
+    vue: {
+      exposeModuleIdentifier: true,
+    },
+  })
+
+  expect(componentModule.__moduleIdentifier).toMatch(/^[0-9a-f]{8}$/)
+})
+
+test('derive __moduleIdentifier from exposeModuleIdentifier callback', async () => {
+  const calls: Array<[string, { resourcePath: string; rootContext: string }]> =
+    []
+
+  const { componentModule } = await mockBundleAndRun({
+    entry: 'basic.vue',
+    vue: {
+      exposeModuleIdentifier: (
+        request: string,
+        context: { resourcePath: string; rootContext: string }
+      ) => {
+        calls.push([request, context])
+        return 'custom-identifier'
+      },
+    },
+  })
+
+  expect(componentModule.__moduleIdentifier).toBe('custom-identifier')
+  expect(calls.length).toBe(1)
+
+  const [request, context] = calls[0]
+  expect(request).toContain('basic.vue')
+  // the inline match resource hash suffix has to be stripped beforehand
+  expect(request).not.toMatch(/\|\w+$/)
+  // enough context to key a manifest by relative path instead of a hash
+  expect(path.relative(context.rootContext, context.resourcePath)).toBe(
+    'test/fixtures/basic.vue'
+  )
 })
 
 test.skip('source map', async () => {
