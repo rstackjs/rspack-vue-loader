@@ -1,22 +1,7 @@
 // Configuration guide: https://rstack.rs/config
 import { define } from 'rstack'
 
-define.lib({
-  bundle: false,
-  dts: true,
-  format: 'cjs',
-  syntax: 'es2015',
-  tools: {
-    rspack(config) {
-      config.output.library = {
-        type: 'commonjs2',
-      }
-    },
-  },
-})
-
 define.test({
-  extends: {},
   globals: true,
   testTimeout: 10_000,
   output: {
