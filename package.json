@@ -10,30 +10,21 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
-    "pretest": "tsc",
-    "test": "NODE_OPTIONS=--openssl-legacy-provider rstest",
-    "pretest:match-resource": "tsc",
-    "test:match-resource": "INLINE_MATCH_RESOURCE=true NODE_OPTIONS=--openssl-legacy-provider rstest",
-    "dev-example": "node example/devServer.js --config example/webpack.config.js --inline --hot",
+    "build": "rs lib",
+    "bump": "pnpx bumpp",
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
-    "lint": "rslint",
-    "prepublishOnly": "tsc",
-    "lint:write": "rslint --fix",
-    "bump": "pnpx bumpp"
-  },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
-  "lint-staged": {
-    "*.js": [
-      "prettier --write"
-    ],
-    "*.ts": [
-      "prettier --parser=typescript --write"
-    ]
+    "check": "rs check",
+    "dev": "rs lib -w",
+    "dev-example": "node example/devServer.js --config example/webpack.config.js --inline --hot",
+    "format": "rs fmt",
+    "lint": "rs lint",
+    "prepare": "rs hooks",
+    "prepublishOnly": "pnpm run build",
+    "pretest": "rs lib",
+    "pretest:match-resource": "rs lib",
+    "test": "NODE_OPTIONS=--openssl-legacy-provider rs test",
+    "test:match-resource": "INLINE_MATCH_RESOURCE=true NODE_OPTIONS=--openssl-legacy-provider rs test"
   },
   "packageManager": "pnpm@11.3.0",
   "dependencies": {
@@ -58,9 +49,7 @@
     "@babel/core": "^7.7.7",
     "@babel/preset-env": "^7.11.5",
     "@intlify/vue-i18n-loader": "^3.0.0",
-    "@rslint/core": "^0.8.2",
     "@rspack/core": "^2.1.8",
-    "@rstest/core": "^0.11.5",
     "@swc/helpers": "^0.5.23",
     "@types/cssesc": "^3.0.2",
     "@types/estree": "^0.0.45",
@@ -75,16 +64,15 @@
     "html-webpack-plugin": "^4.5.0",
     "html-webpack-plugin-v5": "npm:html-webpack-plugin@^5.6.8",
     "jsdom": "^16.4.0",
-    "lint-staged": "^10.3.0",
     "markdown-loader": "^6.0.0",
     "memfs": "^3.1.2",
     "mini-css-extract-plugin": "^1.6.2",
     "normalize-newline": "^3.0.0",
     "null-loader": "^4.0.1",
     "postcss-loader": "^4.0.4",
-    "prettier": "^2.1.1",
     "pug": "^2.0.0",
     "pug-plain-loader": "^1.0.0",
+    "rstack": "^0.7.2",
     "source-map": "^0.6.1",
     "style-loader": "^2.0.0",
     "stylus": "^0.54.7",
@@ -99,7 +87,6 @@
     "webpack": "^5.79.0",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.3",
-    "webpack-merge": "^5.1.4",
-    "yorkie": "^2.0.0"
+    "webpack-merge": "^5.1.4"
   }
 }

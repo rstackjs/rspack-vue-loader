@@ -1,7 +1,7 @@
 <template>
   <p>prop foo: {{ foo }}</p>
   <button @click="inc">{{ count }}</button>
-  <slot/>
+  <slot />
 </template>
 
 <script>
@@ -9,15 +9,17 @@ import { ref } from 'vue'
 
 export default {
   props: {
-    foo: String
+    foo: String,
   },
   setup(props) {
     const count = ref(0)
     return {
       count,
-      inc: () => { count.value++ }
+      inc: () => {
+        count.value++
+      },
     }
-  }
+  },
 }
 </script>
 
