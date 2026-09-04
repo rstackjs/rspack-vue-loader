@@ -212,9 +212,8 @@ export default function loader(
   if (script || scriptSetup) {
     const lang = script?.lang || scriptSetup?.lang
     isTS = !!(lang && /tsx?/.test(lang))
-    const externalQuery = script && !scriptSetup && script.src
-      ? `&external`
-      : ``
+    const externalQuery =
+      script && !scriptSetup && script.src ? `&external` : ``
     const src = (script && !scriptSetup && script.src) || resourcePath
     const attrsQuery = attrsToQuery((scriptSetup || script)!.attrs, 'js')
     const query = `?vue&type=script${attrsQuery}${resourceQuery}${externalQuery}`
