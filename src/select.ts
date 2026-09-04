@@ -58,7 +58,12 @@ export function selectBlock(
     }
     const cacheKey = `${filename}:template`
     const map = isHMR
-      ? getCachedMapOrUpdate(templateCache, cacheKey, template.content, template.map)
+      ? getCachedMapOrUpdate(
+          templateCache,
+          cacheKey,
+          template.content,
+          template.map
+        )
       : template.map
     loaderContext.callback(null, template.content, map as any)
     return
@@ -97,7 +102,12 @@ export function selectBlock(
     const block = descriptor.customBlocks[Number(query.index)]
     const cacheKey = `${filename}:custom:${query.index}`
     const map = isHMR
-      ? getCachedMapOrUpdate(customBlockCache, cacheKey, block.content, block.map)
+      ? getCachedMapOrUpdate(
+          customBlockCache,
+          cacheKey,
+          block.content,
+          block.map
+        )
       : block.map
     loaderContext.callback(null, block.content, map as any)
   }

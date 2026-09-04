@@ -1,7 +1,6 @@
 allowBuilds:
   core-js: false
   fsevents: false
-  yorkie: false
 
 minimumReleaseAgeExclude:
   - '@rsbuild/*'

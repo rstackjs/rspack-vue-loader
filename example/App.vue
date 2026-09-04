@@ -1,11 +1,11 @@
 <template>
-  <img class="logo" src="./logo.png">
+  <img class="logo" src="./logo.png" />
   <div>
     {{ count }}
     <span>{{ count }}</span>
     <Button foo="hello!"><span>slot</span></Button>
-    <ScriptSetup/>
-    <TypeScript/>
+    <ScriptSetup />
+    <TypeScript />
     <custom-web-component>aaa</custom-web-component>
   </div>
 </template>
@@ -19,14 +19,14 @@ export default {
   data() {
     return {
       count: 0,
-      color: 'blue'
+      color: 'blue',
     }
   },
   components: {
     Button,
     ScriptSetup,
-    TypeScript
-  }
+    TypeScript,
+  },
 }
 </script>
 

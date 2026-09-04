@@ -1,3 +1,5 @@
 {
+  "search.useIgnoreFiles": true,
+  "editor.defaultFormatter": "rstack.rstack",
   "typescript.tsdk": "node_modules/typescript/lib"
 }
