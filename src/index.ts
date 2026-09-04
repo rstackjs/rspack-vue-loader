@@ -52,6 +52,26 @@ export interface VueLoaderOptions {
 
   hotReload?: boolean
   exposeFilename?: boolean
+  /**
+   * Attach a `__moduleIdentifier` property to the component, holding a stable
+   * identifier of the module it was compiled from.
+   *
+   * This is meant for server-side rendering: the server can record which
+   * components were actually rendered and map them back to the chunks listed in
+   * the client manifest, to emit preload links for exactly those assets.
+   *
+   * - `true` - attach a hash of the module request
+   * - function - returns the identifier to attach, so that it can be kept in
+   *   sync with whatever the consuming plugin uses as its key. Receives the
+   *   module request, plus the resource path and the root context for
+   *   consumers that key their manifest by relative path instead of a hash.
+   */
+  exposeModuleIdentifier?:
+    | boolean
+    | ((
+        request: string,
+        context: { resourcePath: string; rootContext: string }
+      ) => string)
   appendExtension?: boolean
   enableTsInTemplate?: boolean
   experimentalInlineMatchResource?: boolean
@@ -66,6 +86,15 @@ const exportHelperPath = require.resolve('./exportHelper')
 
 function hash(text: string): string {
   return crypto.createHash('sha256').update(text).digest('hex').substring(0, 8)
+}
+
+/**
+ * A request built with an inline match resource carries a trailing `|<hash>`
+ * suffix. Strip it so that the module identifier stays stable and lines up with
+ * `Module.identifier()` as seen by bundler plugins.
+ */
+function stripModuleIdHash(request: string): string {
+  return request.replace(/\|\w+$/, '')
 }
 
 export default function loader(
@@ -97,6 +126,7 @@ export default function loader(
     sourceMap,
     rootContext,
     resourcePath,
+    request,
     resourceQuery: _resourceQuery = '',
   } = loaderContext
 
@@ -321,6 +351,21 @@ export default function loader(
     // Libraries can opt-in to expose their components' filenames in production builds.
     // For security reasons, only expose the file's basename in production.
     propsToAttach.push([`__file`, JSON.stringify(path.basename(resourcePath))])
+  }
+
+  // Expose a stable module identifier, so that a server-side renderer can map
+  // the components it rendered back to the client manifest.
+  if (options.exposeModuleIdentifier) {
+    const moduleRequest = stripModuleIdHash(request)
+    const moduleIdentifier =
+      typeof options.exposeModuleIdentifier === 'function'
+        ? options.exposeModuleIdentifier(moduleRequest, {
+            resourcePath,
+            rootContext,
+          })
+        : hash(moduleRequest)
+
+    propsToAttach.push([`__moduleIdentifier`, JSON.stringify(moduleIdentifier)])
   }
 
   // custom blocks
