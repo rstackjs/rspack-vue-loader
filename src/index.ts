@@ -50,6 +50,14 @@ export interface VueLoaderOptions {
 
   customElement?: boolean | RegExp
 
+  /**
+   * Whether to generate hot reload code for the component.
+   *
+   * Enabled by default for client builds outside production. Set to `true`
+   * explicitly to opt a server build in as well - useful when a dev server
+   * renders on the server and wants the server bundle to hot swap modules
+   * instead of restarting the whole process.
+   */
   hotReload?: boolean
   exposeFilename?: boolean
   /**
@@ -180,7 +188,7 @@ export default function loader(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
   const needsHotReload =
-    !isServer &&
+    (!isServer || options.hotReload === true) &&
     !isProduction &&
     !!(descriptor.script || descriptor.scriptSetup || descriptor.template) &&
     options.hotReload !== false
@@ -420,7 +428,7 @@ export default function loader(
   }
 
   if (needsHotReload) {
-    code += genHotReloadCode(id, templateRequest)
+    code += genHotReloadCode(id, templateRequest, renderFnName)
   }
 
   code += `\n\nexport default __exports__`

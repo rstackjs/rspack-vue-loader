@@ -2,7 +2,7 @@ import * as qs from 'querystring'
 import type { VueLoaderOptions } from '.'
 import type { RuleSetRule, Compiler, RuleSetUse } from '@rspack/core'
 import { needHMR } from './util'
-import { clientCache, typeDepToSFCMap } from './resolveScript'
+import { invalidateScript, typeDepToSFCMap } from './resolveScript'
 import { compiler as vueCompiler } from './compiler'
 import { descriptorCache } from './descriptorCache'
 
@@ -286,7 +286,7 @@ class VueLoaderPlugin {
             for (const sfc of affectedSFCs) {
               // bust script resolve cache
               const desc = descriptorCache.get(sfc)
-              if (desc) clientCache.delete(desc)
+              if (desc) invalidateScript(desc)
               // force update importing SFC
               // @ts-ignore
               compiler.fileTimestamps.set(sfc, {

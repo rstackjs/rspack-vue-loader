@@ -22,7 +22,11 @@ export function needHMR(
   const isProduction =
     compilerOptions.mode === 'production' ||
     process.env.NODE_ENV === 'production'
-  return !isServer && !isProduction && vueLoaderOptions.hotReload !== false
+  return (
+    (!isServer || vueLoaderOptions.hotReload === true) &&
+    !isProduction &&
+    vueLoaderOptions.hotReload !== false
+  )
 }
 
 export function resolveTemplateTSOptions(
