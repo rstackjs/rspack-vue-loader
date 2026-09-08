@@ -20,6 +20,8 @@ Rspack loader for Vue 3 Single-File Components (SFCs).
 - Compile components for server-side rendering and custom elements.
 - Process custom blocks with your own loaders.
 
+For Rsbuild projects, we recommend [@rsbuild/plugin-vue](https://rsbuild.rs/zh/plugins/list/plugin-vue), which integrates this loader.
+
 ## Installation
 
 Requires Rspack `^1.0.0 || ^2.0.0` and Vue 3. The loader resolves the SFC compiler from `vue/compiler-sfc` (included in Vue 3.2.13 and later), falling back to `@vue/compiler-sfc`. If you install `@vue/compiler-sfc` separately, keep its version aligned with `vue`.
