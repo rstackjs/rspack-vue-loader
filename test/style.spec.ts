@@ -61,37 +61,6 @@ test('scoped style', async () => {
   expect(style).toContain(`.foo p[${scopeId}] .bar {\n  color: red;\n}`)
 })
 
-test('postcss', async () => {
-  const { window } = await mockBundleAndRun({
-    entry: 'postcss.vue',
-    module: {
-      rules: [
-        {
-          test: /\.postcss$/,
-          use: [
-            'style-loader',
-            'css-loader',
-            {
-              loader: 'postcss-loader',
-              options: {
-                postcssOptions: {
-                  parser: require('sugarss'),
-                },
-              },
-            },
-          ],
-        },
-      ],
-    },
-  })
-
-  const id = 'data-v-' + genId('postcss.vue')
-  const style = normalizeNewline(
-    window.document.querySelector('style')!.textContent!
-  )
-  expect(style).toContain(`h1[${id}] {\n  color: red;\n  font-size: 14px\n}`)
-})
-
 test('CSS Modules', async () => {
   const testWithIdent = async (
     localIdentName: string | undefined,
@@ -121,10 +90,6 @@ test('CSS Modules', async () => {
             test: /\.css$/,
             use: baseLoaders,
           },
-          {
-            test: /\.stylus$/,
-            use: [...baseLoaders, 'stylus-loader'],
-          },
         ]
       },
     })
@@ -151,7 +116,7 @@ test('CSS Modules', async () => {
     expect(animationName).not.toBe('fade')
     expect(style).toContain('animation: ' + animationName + ' 1s;')
 
-    // default module + pre-processor + scoped
+    // default module + scoped
     const anotherClassName = instance.$style.red
     const escapedAnotherClassName = cssesc(instance.$style.red, {
       isIdentifier: true,

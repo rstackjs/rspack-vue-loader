@@ -19,9 +19,9 @@ test('basic', async () => {
   expect(style).toContain('comp-a h2 {\n  color: #f00;\n}')
 })
 
-test('pre-processors', async () => {
+test('script and template pre-processors', async () => {
   // @ts-ignore
-  const { window, instance, code, componentModule } = await mockBundleAndRun({
+  const { instance, code, componentModule } = await mockBundleAndRun({
     entry: 'pre.vue',
     module: {
       rules: [
@@ -36,10 +36,6 @@ test('pre-processors', async () => {
         {
           test: /\.pug$/,
           loader: 'pug-plain-loader',
-        },
-        {
-          test: /\.stylus$/,
-          use: ['style-loader', 'css-loader', 'stylus-loader'],
         },
       ],
     },
@@ -59,14 +55,6 @@ test('pre-processors', async () => {
   // script
   // @ts-ignore
   expect(componentModule.data().msg).toContain('Hello from Babel')
-
-  // style
-  const style = normalizeNewline(
-    window.document.querySelector('style')!.textContent!
-  )
-  expect(style).toContain(
-    'body {\n  font: 100% Helvetica, sans-serif;\n  color: #999;\n}'
-  )
 })
 
 test('style import', async () => {

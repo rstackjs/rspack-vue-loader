@@ -1,6 +1,7 @@
-<style lang="stylus">
-h1
-  color red
+<style>
+h1 {
+  color: red;
+}
 </style>
 
 <style scoped>

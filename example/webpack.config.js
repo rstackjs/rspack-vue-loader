@@ -79,7 +79,7 @@ module.exports = (env = {}) => {
             test: /\.ts$/,
             use: [
               {
-                loader: require.resolve('ts-loader-v9'),
+                loader: require.resolve('ts-loader'),
                 options: {
                   transpileOnly: true,
                   appendTsSuffixTo: [/\.vue$/],

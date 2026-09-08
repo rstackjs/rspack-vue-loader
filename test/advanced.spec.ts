@@ -155,10 +155,6 @@ test('extract CSS', async () => {
           test: /\.css$/,
           use: [MiniCssExtractPlugin.loader, 'css-loader'],
         },
-        {
-          test: /\.stylus$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader', 'stylus-loader'],
-        },
       ]
     },
     plugins: [
@@ -170,7 +166,7 @@ test('extract CSS', async () => {
 
   const css = normalizeNewline(mfs.readFileSync('/test.output.css').toString())
   const id = `data-v-${genId('extract-css.vue')}`
-  expect(css).toContain(`h1 {\n  color: #f00;\n}`)
+  expect(css).toContain(`h1 {\n  color: red;\n}`)
   // extract + scoped
   expect(css).toContain(`h2[${id}] {\n  color: green;\n}`)
 })
@@ -255,7 +251,5 @@ test('support rules with oneOf', async () => {
   style = normalizeNewline(window.document.querySelector('style')!.textContent!)
   expect(style).toContain('.' + escapedClassName + ' {\n  color: red;\n}')
 })
-
-test.todo('should work with eslint loader')
 
 test.todo('multiple rule definitions')

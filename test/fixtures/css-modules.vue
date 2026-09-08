@@ -10,9 +10,10 @@
 }
 </style>
 
-<style lang="stylus" module scoped>
-.red
-  color: red
+<style module scoped>
+.red {
+  color: red;
+}
 </style>
 
 <script>

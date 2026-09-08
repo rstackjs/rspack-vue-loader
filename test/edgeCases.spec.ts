@@ -1,5 +1,4 @@
 import * as path from 'path'
-import webpack from 'webpack'
 import {
   mfs,
   bundle,
@@ -124,7 +123,7 @@ test('should not duplicate css modules value imports', async () => {
 
 // #1213
 test('html-webpack-plugin', async () => {
-  const HTMLPlugin = require('html-webpack-plugin-v5')
+  const HTMLPlugin = require('html-webpack-plugin')
   await bundle({
     entry: 'basic.vue',
     plugins: [
@@ -158,7 +157,7 @@ test('usage with null-loader', async () => {
 
 // #1278
 test('proper dedupe on src-imports with options', async () => {
-  const tsLoaderPath = require.resolve('ts-loader-v9')
+  const tsLoaderPath = require.resolve('ts-loader')
   const result = await mockBundleAndRun({
     entry: 'ts.vue',
     resolve: {
@@ -199,11 +198,6 @@ test('use with postLoader', async () => {
 
 // #1771
 test('data: URI as entry', async () => {
-  // this feature is only available in webpack 5
-  if (webpack.version!.startsWith('4')) {
-    return
-  }
-
   await bundle({
     entry: {
       main: 'data:text/javascript,console.log("hello world")',

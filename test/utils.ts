@@ -2,7 +2,6 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import webpack from 'webpack'
 import merge from 'webpack-merge'
-// import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { fs as mfs } from 'memfs'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
@@ -43,7 +42,7 @@ const baseConfig: webpack.Configuration = {
       },
       {
         test: /\.ts$/,
-        loader: require.resolve('ts-loader-v9'),
+        loader: require.resolve('ts-loader'),
         options: {
           transpileOnly: true,
           appendTsSuffixTo: [/\.vue$/],
@@ -58,9 +57,6 @@ const baseConfig: webpack.Configuration = {
       __VUE_PROD_DEVTOOLS__: false,
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
     }),
-    // new MiniCssExtractPlugin({
-    //   filename: '[name].css',
-    // }),
   ],
 }
 
