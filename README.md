@@ -37,10 +37,11 @@ pnpm add -D rspack-vue-loader
 yarn add -D rspack-vue-loader
 ```
 
-Register both the loader and `VueLoaderPlugin`. The plugin applies your language rules to the corresponding SFC blocks and adds template compilation and scoped CSS processing.
+Register both the loader and `VueLoaderPlugin`. The plugin applies your language rules to the corresponding SFC blocks and adds template compilation and scoped CSS processing. Use `CssExtractRspackPlugin.loader` with `css-loader` to emit styles as separate CSS files:
 
 ```js
 // rspack.config.mjs
+import { CssExtractRspackPlugin } from '@rspack/core'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
 
 export default {
@@ -53,11 +54,14 @@ export default {
       {
         test: /\.css$/,
         type: 'javascript/auto',
-        use: ['style-loader', 'css-loader'],
+        use: [CssExtractRspackPlugin.loader, 'css-loader'],
       },
     ],
   },
-  plugins: [new VueLoaderPlugin()],
+  plugins: [
+    new VueLoaderPlugin(),
+    new CssExtractRspackPlugin({ filename: '[name].css' }),
+  ],
 }
 ```
 
@@ -65,7 +69,7 @@ Keep the `.vue` rule at the root of `module.rules`; `VueLoaderPlugin` does not s
 
 ## Examples
 
-The examples below show additions or replacements to the installation config. Keep the other rules and `VueLoaderPlugin`.
+The examples below show additions or replacements to the installation config. Unless stated otherwise, keep the other rules, the `CssExtractRspackPlugin` import, and both plugins.
 
 ### TypeScript
 
@@ -115,7 +119,7 @@ For projects using `sass` and `sass-loader`, add this rule to `module.rules`:
 {
   test: /\.scss$/,
   type: 'javascript/auto',
-  use: ['style-loader', 'css-loader', 'sass-loader'],
+  use: [CssExtractRspackPlugin.loader, 'css-loader', 'sass-loader'],
 },
 ```
 
@@ -142,7 +146,7 @@ The loader handles Vue's scoped CSS and CSS variable transforms. For projects us
   test: /\.css$/,
   type: 'javascript/auto',
   use: [
-    'style-loader',
+    CssExtractRspackPlugin.loader,
     {
       loader: 'css-loader',
       options: { importLoaders: 1 },
@@ -240,7 +244,7 @@ Replace the CSS rule with a `oneOf` rule that enables CSS Modules for `<style mo
     {
       resourceQuery: /module/,
       use: [
-        'style-loader',
+        CssExtractRspackPlugin.loader,
         {
           loader: 'css-loader',
           options: {
@@ -250,7 +254,7 @@ Replace the CSS rule with a `oneOf` rule that enables CSS Modules for `<style mo
       ],
     },
     {
-      use: ['style-loader', 'css-loader'],
+      use: [CssExtractRspackPlugin.loader, 'css-loader'],
     },
   ],
 },
@@ -272,31 +276,34 @@ The generated class names are available as `$style` in templates and through Vue
 
 ### CSS extraction
 
-To emit a separate CSS file, replace `style-loader` with `CssExtractRspackPlugin.loader` and add the plugin. Do not use both loaders in the same style chain:
+The installation config uses `CssExtractRspackPlugin.loader` with `css-loader` to emit `[name].css`. Keep `CssExtractRspackPlugin` registered when using this loader in CSS, Sass, or CSS Modules rules.
+
+For component libraries, preserve style side effects when configuring `sideEffects`; setting it to `false` for styled SFCs can cause their CSS to be removed.
+
+### style-loader
+
+To inject CSS into the page's `<style>` tags, replace the extraction loader with `style-loader`:
 
 ```js
 // rspack.config.mjs
-import { CssExtractRspackPlugin } from '@rspack/core'
+import { VueLoaderPlugin } from 'rspack-vue-loader'
 
 export default {
   module: {
     rules: [
-      // Replace the CSS rule; keep the other rules.
+      // Keep the Vue rule and replace the CSS rule with:
       {
         test: /\.css$/,
         type: 'javascript/auto',
-        use: [CssExtractRspackPlugin.loader, 'css-loader'],
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
-  plugins: [
-    // Keep VueLoaderPlugin and the existing plugins.
-    new CssExtractRspackPlugin({ filename: '[name].css' }),
-  ],
+  plugins: [new VueLoaderPlugin()],
 }
 ```
 
-For component libraries, preserve style side effects when configuring `sideEffects`; setting it to `false` for styled SFCs can cause their CSS to be removed.
+Use this configuration for browser builds. Do not combine `style-loader` and `CssExtractRspackPlugin.loader` in the same loader chain. Remove `CssExtractRspackPlugin` if no other rules use CSS extraction.
 
 ### Built-in CSS
 
@@ -316,7 +323,7 @@ With Rspack 2, you can use built-in CSS processing by replacing the Vue and CSS 
 },
 ```
 
-Keep `VueLoaderPlugin`. This path does not need `style-loader`, `css-loader`, or `CssExtractRspackPlugin`. With Rspack 1, also enable `experiments.css` in the Rspack config.
+Keep `VueLoaderPlugin` and remove `CssExtractRspackPlugin` if no other rules use CSS extraction. This path processes CSS without `css-loader`. With Rspack 1, also enable `experiments.css` in the Rspack config.
 
 The loader's built-in CSS integration currently supports regular and scoped styles, but does not support `<style module>` or custom element inline styles. Use the `css-loader` configuration for those features.
 
@@ -424,7 +431,7 @@ export default {
 }
 ```
 
-Use CSS extraction or built-in CSS for server builds instead of `style-loader`. Server HMR is disabled by default; see [hotReload](#hotreload) to opt in. Use [exposeModuleIdentifier](#exposemoduleidentifier) to attach metadata for mapping rendered components to a client manifest.
+Use CSS extraction or built-in CSS for server builds. Server HMR is disabled by default; see [hotReload](#hotreload) to opt in. Use [exposeModuleIdentifier](#exposemoduleidentifier) to attach metadata for mapping rendered components to a client manifest.
 
 ### Source maps and production builds
 
@@ -521,7 +528,7 @@ import MyElement from './MyElement.element.vue'
 customElements.define('my-element', defineCustomElement(MyElement))
 ```
 
-Use the `css-loader` style rule from the installation example. The loader handles style inlining automatically. CSS Modules and built-in CSS processing are not supported in this mode.
+Use the CSS rule from the installation example. In custom element mode, the loader bypasses CSS extraction and inlines the styles automatically. CSS Modules and built-in CSS processing are not supported in this mode.
 
 ### hotReload
 
