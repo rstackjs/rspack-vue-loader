@@ -72,7 +72,8 @@ test('CSS Modules', async () => {
         loader: 'css-loader',
         options: {
           modules: {
-            localIdentName,
+            namedExport: false,
+            ...(localIdentName ? { localIdentName } : {}),
           },
         },
       },
@@ -88,6 +89,7 @@ test('CSS Modules', async () => {
           },
           {
             test: /\.css$/,
+            type: 'javascript/auto',
             use: baseLoaders,
           },
         ]
@@ -127,7 +129,7 @@ test('CSS Modules', async () => {
   }
 
   // default ident
-  await testWithIdent(undefined, /^\w{21,}/)
+  await testWithIdent(undefined, /^[a-zA-Z0-9_-]{16}$/)
 
   // custom ident
   await testWithIdent(
@@ -142,7 +144,7 @@ test('CSS Modules Extend', async () => {
     {
       loader: 'css-loader',
       options: {
-        modules: true,
+        modules: { namedExport: false },
       },
     },
   ]
@@ -157,6 +159,7 @@ test('CSS Modules Extend', async () => {
         },
         {
           test: /\.css$/,
+          type: 'javascript/auto',
           use: baseLoaders,
         },
       ]

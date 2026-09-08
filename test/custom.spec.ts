@@ -1,15 +1,15 @@
 import { bundle, mockBundleAndRun } from './utils'
 
-test('add custom blocks to the webpack output', async () => {
+test('add custom blocks to the Rspack output', async () => {
   const { code } = await bundle({
     entry: 'custom-language.vue',
     module: {
       rules: [
         {
           test: /\.js/,
-          loader: 'babel-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            jsc: { target: 'es5' },
           },
         },
       ],
@@ -17,14 +17,8 @@ test('add custom blocks to the webpack output', async () => {
   })
 
   // should also be transpiled
-  expect(code).toContain(
-    `
-describe('example', function () {
-  it('basic', function (done) {
-    done();
-  });
-});
-  `.trim()
+  expect(code).toMatch(
+    /describe\('example', function\s*\(\) \{\s*it\('basic', function\s*\(done\) \{\s*done\(\);\s*\}\);\s*\}\);/
   )
 }, 10_000)
 
@@ -35,23 +29,17 @@ test('custom blocks should work with src imports', async () => {
       rules: [
         {
           test: /\.js/,
-          loader: 'babel-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            jsc: { target: 'es5' },
           },
         },
       ],
     },
   })
 
-  expect(code).toContain(
-    `
-describe('example', function () {
-  it('basic', function (done) {
-    done();
-  });
-});
-  `.trim()
+  expect(code).toMatch(
+    /describe\('example', function\s*\(\) \{\s*it\('basic', function\s*\(done\) \{\s*done\(\);\s*\}\);\s*\}\);/
   )
 })
 

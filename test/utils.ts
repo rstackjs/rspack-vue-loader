@@ -1,7 +1,12 @@
 import * as path from 'path'
 import * as crypto from 'crypto'
-import webpack from 'webpack'
-import merge from 'webpack-merge'
+import {
+  rspack,
+  type Configuration,
+  type Stats,
+  type OutputFileSystem,
+} from '@rspack/core'
+import { merge } from 'rspack-merge'
 import { fs as mfs } from 'memfs'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
@@ -18,7 +23,8 @@ export const DEFAULT_VUE_USE = {
   },
 }
 
-const baseConfig: webpack.Configuration = {
+// Rspack and VueLoaderPlugin mutate rules; each compilation needs fresh objects.
+const createBaseConfig = (): Configuration => ({
   mode: 'development',
   devtool: false,
   output: {
@@ -38,48 +44,46 @@ const baseConfig: webpack.Configuration = {
     rules: [
       {
         test: /\.vue$/,
-        use: [DEFAULT_VUE_USE],
+        use: [{ ...DEFAULT_VUE_USE, options: { ...DEFAULT_VUE_USE.options } }],
       },
       {
         test: /\.ts$/,
-        loader: require.resolve('ts-loader'),
+        loader: 'builtin:swc-loader',
         options: {
-          transpileOnly: true,
-          appendTsSuffixTo: [/\.vue$/],
+          jsc: { parser: { syntax: 'typescript' } },
         },
       },
     ],
   },
   plugins: [
     new VueLoaderPlugin(),
-    new webpack.DefinePlugin({
+    new rspack.DefinePlugin({
       __VUE_OPTIONS_API__: true,
       __VUE_PROD_DEVTOOLS__: false,
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false,
     }),
   ],
-}
+})
 
-type BundleOptions = webpack.Configuration & {
+type BundleOptions = Configuration & {
   vue?: VueLoaderOptions
-  modify?: (config: webpack.Configuration) => void
+  modify?: (config: Configuration) => void
 }
 
-export function bundle(
+export async function bundle(
   options: BundleOptions,
   wontThrowError?: boolean
 ): Promise<{
   code: string
-  stats: webpack.Stats
+  stats: Stats
 }> {
-  let config: BundleOptions = merge({}, baseConfig, options)
+  let config: BundleOptions = merge(createBaseConfig(), options)
 
-  if (!options.experiments?.css) {
-    config.module?.rules?.push({
-      test: /\.css$/,
-      use: ['style-loader', 'css-loader'],
-    })
-  }
+  config.module?.rules?.push({
+    test: /\.css$/,
+    type: 'javascript/auto',
+    use: ['style-loader', 'css-loader'],
+  })
 
   if (config.vue && config.module) {
     const vueOptions = {
@@ -128,37 +132,40 @@ export function bundle(
     options.modify(config)
   }
 
-  const webpackCompiler = webpack(config)
-  webpackCompiler.outputFileSystem = Object.assign(
+  const compiler = rspack(config)
+  compiler.outputFileSystem = Object.assign(
     {
       join: path.join.bind(path),
     },
     mfs
-  )
+  ) as unknown as OutputFileSystem
 
-  return new Promise((resolve, reject) => {
-    webpackCompiler.run((err, stats) => {
-      const errors = stats?.compilation.errors
-      if (!wontThrowError) {
-        expect(err).toBeNull()
-        if (errors && errors.length) {
-          errors.forEach((error) => {
-            console.error(error)
-          })
+  try {
+    const stats = await new Promise<Stats>((resolve, reject) => {
+      compiler.run((error, result) => {
+        if (error) {
+          reject(error)
+        } else if (!result) {
+          reject(new Error('Rspack did not return compilation stats'))
+        } else {
+          resolve(result)
         }
-        expect(errors).toHaveLength(0)
-      }
-
-      if (err) {
-        reject(err)
-      } else {
-        resolve({
-          code: mfs.readFileSync('/test.build.js').toString(),
-          stats: stats!,
-        })
-      }
+      })
     })
-  })
+
+    if (!wontThrowError && stats.hasErrors()) {
+      throw new Error(stats.toString({ all: false, errors: true }))
+    }
+
+    return {
+      code: mfs.readFileSync('/test.build.js').toString(),
+      stats,
+    }
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      compiler.close((error) => (error ? reject(error) : resolve()))
+    })
+  }
 }
 
 export async function mockBundleAndRun(
@@ -170,6 +177,7 @@ export async function mockBundleAndRun(
   const dom = new JSDOM(
     `<!DOCTYPE html><html><head></head><body></body></html>`,
     {
+      url: 'http://localhost/',
       runScripts: 'outside-only',
       virtualConsole: new VirtualConsole(),
     }

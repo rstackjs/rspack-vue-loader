@@ -4,8 +4,8 @@
     "outDir": "dist",
     "sourceMap": false,
     "target": "es2015",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "declaration": true,
     "allowJs": false,
@@ -14,10 +14,11 @@
     "noImplicitAny": true,
     "removeComments": false,
     "skipLibCheck": true,
-    "lib": ["es6", "es7", "DOM"],
+    "lib": ["es2022", "DOM"],
     "types": ["rstack/test/globals"],
     "paths": {
-      "rspack-vue-loader": ["../src/index.ts"]
+      "rspack-vue-loader": ["../src/index.ts"],
+      "src": ["../src"]
     }
   }
 }

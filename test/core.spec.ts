@@ -28,9 +28,9 @@ test('script and template pre-processors', async () => {
         {
           test: /\.js$/,
           exclude: /node_modules/,
-          loader: 'babel-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            jsc: { target: 'es5' },
           },
         },
         {
@@ -41,8 +41,8 @@ test('script and template pre-processors', async () => {
     },
   })
 
-  // make sure babel is actually applied
-  expect(code).toMatch('data: function data()')
+  // make sure SWC is actually applied
+  expect(code).toMatch(/data: function(?: data)?\(\)/)
 
   // div
   //   h1 This is the app
@@ -54,7 +54,7 @@ test('script and template pre-processors', async () => {
 
   // script
   // @ts-ignore
-  expect(componentModule.data().msg).toContain('Hello from Babel')
+  expect(componentModule.data().msg).toContain('Hello from SWC')
 })
 
 test('style import', async () => {
@@ -133,7 +133,7 @@ test('cloned rules should not intefere with each other', async () => {
           test: /\.js$/,
           use: [
             {
-              loader: 'babel-loader',
+              loader: 'builtin:swc-loader',
               options: {},
             },
           ],

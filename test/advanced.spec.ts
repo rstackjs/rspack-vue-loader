@@ -10,7 +10,7 @@ import {
   DEFAULT_VUE_USE,
 } from './utils'
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const { CssExtractRspackPlugin } = require('@rspack/core')
 
 test('support chaining with other loaders', async () => {
   const { componentModule } = await mockBundleAndRun({
@@ -153,12 +153,13 @@ test('extract CSS', async () => {
         },
         {
           test: /\.css$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          type: 'javascript/auto',
+          use: [CssExtractRspackPlugin.loader, 'css-loader'],
         },
       ]
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new CssExtractRspackPlugin({
         filename: 'test.output.css',
       }),
     ],
@@ -183,12 +184,13 @@ test('extract CSS with code spliting', async () => {
         },
         {
           test: /\.css$/,
-          use: [MiniCssExtractPlugin.loader, 'css-loader'],
+          type: 'javascript/auto',
+          use: [CssExtractRspackPlugin.loader, 'css-loader'],
         },
       ]
     },
     plugins: [
-      new MiniCssExtractPlugin({
+      new CssExtractRspackPlugin({
         filename: 'test.output.css',
       }),
     ],
@@ -212,6 +214,7 @@ test('support rules with oneOf', async () => {
           },
           {
             test: /\.css$/,
+            type: 'javascript/auto',
             use: 'style-loader',
             oneOf: [
               {
@@ -221,6 +224,7 @@ test('support rules with oneOf', async () => {
                     loader: 'css-loader',
                     options: {
                       modules: {
+                        namedExport: false,
                         localIdentName: '[local]_[hash:base64:5]',
                       },
                     },
