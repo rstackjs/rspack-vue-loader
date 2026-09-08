@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "bump": "pnpx bumpp",
+    "bump": "pnpm version -m \"release: v%s\"",
     "build-example": "rm -rf example/dist && webpack --config example/webpack.config.js --env.prod",
     "build-example-ssr": "rm -rf example/dist-ssr && webpack --config example/webpack.config.js --env.prod --env.ssr && node example/ssr.js",
     "check": "rs check",
