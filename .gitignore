@@ -9,3 +9,6 @@ TODOs.md
 coverage
 .vscode/*
 !.vscode/extensions.json
+
+# test scratch dirs
+test/.tmp

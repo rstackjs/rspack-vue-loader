@@ -15,6 +15,17 @@ const serverCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 export const typeDepToSFCMap = new Map<string, Set<string>>()
 
 /**
+ * Drop the compiled script of a descriptor, so that the next build recompiles
+ * it. Both caches are cleared because a single descriptor can be compiled for
+ * a client and a server build, and there is no way to tell here which one the
+ * stale entry belongs to.
+ */
+export function invalidateScript(descriptor: SFCDescriptor) {
+  clientCache.delete(descriptor)
+  serverCache.delete(descriptor)
+}
+
+/**
  * inline template mode can only be enabled if:
  * - is production (separate compilation needed for HMR during dev)
  * - template has no pre-processor (separate loader chain required)
