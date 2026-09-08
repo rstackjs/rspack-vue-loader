@@ -158,7 +158,7 @@ async function startServerBuild(files: Record<string, string>) {
         },
         {
           test: /\.ts$/,
-          loader: require.resolve('ts-loader-v9'),
+          loader: require.resolve('ts-loader'),
           options: {
             transpileOnly: true,
             appendTsSuffixTo: [/\.vue$/],
