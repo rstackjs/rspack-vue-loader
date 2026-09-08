@@ -36,7 +36,7 @@ test('vue rule with include', async () => {
   const result = await mockBundleAndRun({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('vue')
       )
       config.module.rules[i] = {
@@ -63,6 +63,7 @@ test('test-less oneOf rules', async () => {
           oneOf: [
             {
               test: /\.css$/,
+              type: 'javascript/auto',
               use: ['style-loader', 'css-loader'],
             },
           ],
@@ -79,7 +80,7 @@ test('normalize multiple use + options', async () => {
   await bundle({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('vue')
       )
       config!.module!.rules[i] = {
@@ -94,17 +95,18 @@ test('should not duplicate css modules value imports', async () => {
   const { window, exports } = await mockBundleAndRun({
     entry: './test/fixtures/duplicate-cssm.js',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('css')
       )
       config.module.rules[i] = {
         test: /\.css$/,
+        type: 'javascript/auto',
         use: [
           'style-loader',
           {
             loader: 'css-loader',
             options: {
-              modules: true,
+              modules: { namedExport: false },
             },
           },
         ],
@@ -122,12 +124,12 @@ test('should not duplicate css modules value imports', async () => {
 })
 
 // #1213
-test('html-webpack-plugin', async () => {
-  const HTMLPlugin = require('html-webpack-plugin')
+test('HtmlRspackPlugin', async () => {
+  const { HtmlRspackPlugin } = require('@rspack/core')
   await bundle({
     entry: 'basic.vue',
     plugins: [
-      new HTMLPlugin({
+      new HtmlRspackPlugin({
         inject: true,
         template: path.resolve(__dirname, 'fixtures/index.html'),
         filename: 'output.html',
@@ -144,11 +146,12 @@ test('usage with null-loader', async () => {
   await mockBundleAndRun({
     entry: 'basic.vue',
     modify: (config: any) => {
-      const i = config.module.rules.findIndex((r) =>
+      const i = config.module.rules.findIndex((r: any) =>
         r.test.toString().includes('css')
       )
       config.module.rules[i] = {
         test: /\.css$/,
+        type: 'javascript/auto',
         use: ['null-loader'],
       }
     },
@@ -157,7 +160,6 @@ test('usage with null-loader', async () => {
 
 // #1278
 test('proper dedupe on src-imports with options', async () => {
-  const tsLoaderPath = require.resolve('ts-loader')
   const result = await mockBundleAndRun({
     entry: 'ts.vue',
     resolve: {
@@ -167,8 +169,8 @@ test('proper dedupe on src-imports with options', async () => {
       rules: [
         {
           test: /\.ts$/,
-          loader: tsLoaderPath,
-          options: { appendTsSuffixTo: [/\.vue$/] },
+          loader: 'builtin:swc-loader',
+          options: { jsc: { parser: { syntax: 'typescript' } } },
         },
       ],
     },

@@ -1,15 +1,15 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import webpack from 'webpack'
+import { rspack, type Configuration, type Stats } from '@rspack/core'
 import { VueLoaderPlugin } from 'rspack-vue-loader'
 import { bundle } from './utils'
 
 // hot reload code is wrapped in `if (module.hot)`, which the bundler drops
 // unless HMR is actually enabled for the compilation
-const enableHMR = (config: webpack.Configuration) => {
+const enableHMR = (config: Configuration) => {
   config.plugins = [
     ...(config.plugins ?? []),
-    new webpack.HotModuleReplacementPlugin(),
+    new rspack.HotModuleReplacementPlugin(),
   ]
 }
 
@@ -96,7 +96,7 @@ exports.hot = module.hot
 
 interface ServerBuild {
   /** resolves once the next compilation has finished */
-  nextBuild: () => Promise<webpack.Stats>
+  nextBuild: () => Promise<Stats>
   /** applies the pending hot update inside the running bundle */
   applyUpdate: () => Promise<void>
   render: () => Promise<string>
@@ -114,7 +114,7 @@ async function startServerBuild(files: Record<string, string>) {
     write(name, content)
   }
 
-  const compiler = webpack({
+  const compiler = rspack({
     mode: 'development',
     devtool: false,
     target: 'node',
@@ -158,19 +158,18 @@ async function startServerBuild(files: Record<string, string>) {
         },
         {
           test: /\.ts$/,
-          loader: require.resolve('ts-loader'),
+          loader: 'builtin:swc-loader',
           options: {
-            transpileOnly: true,
-            appendTsSuffixTo: [/\.vue$/],
+            jsc: { parser: { syntax: 'typescript' } },
           },
         },
       ],
     },
-    plugins: [new VueLoaderPlugin(), new webpack.HotModuleReplacementPlugin()],
+    plugins: [new VueLoaderPlugin(), new rspack.HotModuleReplacementPlugin()],
   })
 
-  const finished: webpack.Stats[] = []
-  const waiting: ((stats: webpack.Stats) => void)[] = []
+  const finished: Stats[] = []
+  const waiting: ((stats: Stats) => void)[] = []
   compiler.hooks.done.tap('server-hmr-test', (stats) => {
     const waiter = waiting.shift()
     if (waiter) {
@@ -181,7 +180,7 @@ async function startServerBuild(files: Record<string, string>) {
   })
 
   const nextBuild = () =>
-    new Promise<webpack.Stats>((resolve) => {
+    new Promise<Stats>((resolve) => {
       const stats = finished.shift()
       if (stats) {
         resolve(stats)
@@ -210,7 +209,9 @@ async function startServerBuild(files: Record<string, string>) {
     close: () =>
       new Promise<void>((resolve, reject) => {
         delete require.cache[require.resolve(bundlePath)]
-        watching.close((err) => (err ? reject(err) : resolve()))
+        watching.close(() => {
+          compiler.close((error) => (error ? reject(error) : resolve()))
+        })
       }).then(() => {
         fs.rmSync(dir, { recursive: true, force: true })
       }),

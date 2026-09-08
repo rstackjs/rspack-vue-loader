@@ -1,16 +1,16 @@
 import * as path from 'path'
 import { DEFAULT_VUE_USE, mockBundleAndRun, normalizeNewline } from './utils'
 
-test('apply babel transformations to expressions in template', async () => {
+test('apply SWC transformations to expressions in template', async () => {
   const { instance } = await mockBundleAndRun({
     entry: 'optional-chaining.vue',
     module: {
       rules: [
         {
           test: /\.js/,
-          loader: 'babel-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            jsc: { target: 'es5' },
           },
         },
       ],
@@ -23,7 +23,7 @@ test('apply babel transformations to expressions in template', async () => {
 })
 
 test('transform relative URLs and respects resolve alias', async () => {
-  const { window, instance } = await mockBundleAndRun({
+  const { window, instance, stats } = await mockBundleAndRun({
     entry: 'resolve.vue',
     resolve: {
       alias: {
@@ -34,30 +34,36 @@ test('transform relative URLs and respects resolve alias', async () => {
       rules: [
         {
           test: /\.png$/,
-          loader: 'file-loader',
-          options: {
-            name: '[name].[hash:6].[ext]',
+          type: 'asset/resource',
+          generator: {
+            filename: '[name].[contenthash:6][ext]',
           },
         },
       ],
     },
   })
 
+  const assetName = Object.keys(stats.compilation.assets).find((name) =>
+    /^logo\.[a-f0-9]{6}\.png$/.test(name)
+  )
+  expect(assetName).toBeDefined()
+  const assetURL = new URL(assetName!, window.location.href).href
+
   expect(instance.$el.children[0].tagName).toBe('IMG')
-  expect(instance.$el.children[0].src).toBe('logo.cab72b.png')
+  expect(instance.$el.children[0].src).toBe(assetURL)
   expect(instance.$el.children[1].tagName).toBe('IMG')
-  expect(instance.$el.children[1].src).toBe('logo.cab72b.png')
+  expect(instance.$el.children[1].src).toBe(assetURL)
 
   // maybe this case should be removed
   // <https://github.com/vuejs/vue-loader/pull/927#issuecomment-714333544>
   expect(instance.$el.children[2].tagName).toBe('IMG')
-  expect(instance.$el.children[2].src).toBe('logo.cab72b.png')
+  expect(instance.$el.children[2].src).toBe(assetURL)
 
   const style = normalizeNewline(
     window.document.querySelector('style')!.textContent!
   )
-  expect(style).toContain('html { background-image: url(logo.cab72b.png);\n}')
-  expect(style).toContain('body { background-image: url(logo.cab72b.png);\n}')
+  expect(style).toContain(`html { background-image: url(${assetURL});\n}`)
+  expect(style).toContain(`body { background-image: url(${assetURL});\n}`)
 })
 
 test('customizing template loaders', async () => {

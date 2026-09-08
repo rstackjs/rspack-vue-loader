@@ -8,7 +8,7 @@ div
 <script>
 export default {
   data () {
-    return { msg: 'Hello from Babel' }
+    return { msg: 'Hello from SWC' }
   }
 }
 </script>

@@ -1,8 +1,8 @@
-// This script is part of `yarn build-example-ssr`.
+// This script is part of `pnpm build-example-ssr`.
 
 const fs = require('fs')
 const path = require('path')
-const { renderToString } = require('@vue/server-renderer')
+const { renderToString } = require('vue/server-renderer')
 const template = fs.readFileSync(path.resolve(__dirname, 'index.html'), 'utf-8')
 
 // here out server-side build directly exports an app instance.

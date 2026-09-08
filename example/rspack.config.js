@@ -1,7 +1,6 @@
 const path = require('path')
-const webpack = require('webpack')
+const { rspack } = require('@rspack/core')
 const VueLoaderPlugin = require('../dist/plugin').default
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = (env = {}) => {
   const isProd = env.prod
@@ -10,9 +9,9 @@ module.exports = (env = {}) => {
   /**
    * Some notes regarding config for the server build of an SSR app:
    * 1. target: 'node'
-   * 2. output.libraryTarget: 'commonjs' (so the exported app can be required)
+   * 2. output.library: { type: 'commonjs2' } (so the exported app can be required)
    * 3. externals: this is mostly for faster builds.
-   *    - externalize @vue/* deps via commonjs require()
+   *    - externalize Vue via commonjs require()
    *    - externalize client side deps that are never used on the server, e.g.
    *      ones that are only used in onMounted() to empty modules
    * 4. If using cache-loader or any other forms of cache, make sure the cache
@@ -30,18 +29,19 @@ module.exports = (env = {}) => {
         extensions: ['.js', '.ts'],
       },
       output: {
+        clean: true,
         path: path.resolve(
           __dirname,
           isSSR ? (isServerBuild ? 'dist-ssr/server' : 'dist-ssr/dist') : 'dist'
         ),
         filename: '[name].js',
         publicPath: '/dist/',
-        libraryTarget: isServerBuild ? 'commonjs' : undefined,
+        library: isServerBuild ? { type: 'commonjs2' } : undefined,
       },
       externals: isServerBuild
         ? [
-            (ctx, request, cb) => {
-              if (/^@vue/.test(request)) {
+            ({ request }, cb) => {
+              if (/^vue(?:\/|$)/.test(request)) {
                 return cb(null, 'commonjs ' + request)
               }
               cb()
@@ -54,7 +54,7 @@ module.exports = (env = {}) => {
             test: /\.vue$/,
             loader: 'rspack-vue-loader',
             options: {
-              // reactivityTransform: true,
+              experimentalInlineMatchResource: true,
               compilerOptions: {
                 isCustomElement: (tag) => tag.startsWith('custom-'),
               },
@@ -62,27 +62,21 @@ module.exports = (env = {}) => {
           },
           {
             test: /\.png$/,
-            use: [
-              {
-                loader: 'url-loader',
-                options: {
-                  limit: 8192,
-                },
-              },
-            ],
+            type: 'asset',
+            parser: { dataUrlCondition: { maxSize: 8192 } },
           },
           {
             test: /\.css$/,
-            use: [MiniCssExtractPlugin.loader, 'css-loader'],
+            type: 'javascript/auto',
+            use: [rspack.CssExtractRspackPlugin.loader, 'css-loader'],
           },
           {
             test: /\.ts$/,
             use: [
               {
-                loader: require.resolve('ts-loader'),
+                loader: 'builtin:swc-loader',
                 options: {
-                  transpileOnly: true,
-                  appendTsSuffixTo: [/\.vue$/],
+                  jsc: { parser: { syntax: 'typescript' } },
                 },
               },
             ],
@@ -96,10 +90,10 @@ module.exports = (env = {}) => {
       },
       plugins: [
         new VueLoaderPlugin(),
-        new MiniCssExtractPlugin({
+        new rspack.CssExtractRspackPlugin({
           filename: '[name].css',
         }),
-        new webpack.DefinePlugin({
+        new rspack.DefinePlugin({
           __IS_SSR__: !!isSSR,
           __VUE_OPTIONS_API__: true,
           __VUE_PROD_DEVTOOLS__: false,
@@ -111,9 +105,9 @@ module.exports = (env = {}) => {
       },
       devServer: {
         hot: true,
-        stats: 'minimal',
-        contentBase: __dirname,
-        overlay: true,
+        static: __dirname,
+        devMiddleware: { stats: 'minimal' },
+        client: { overlay: true },
       },
       resolveLoader: {
         alias: {
