@@ -84,6 +84,7 @@ const ruleSetCompiler = new RuleSetCompiler([
   new BasicMatcherRulePlugin('issuer'),
   new BasicMatcherRulePlugin('compiler'),
   new BasicMatcherRulePlugin('issuerLayer'),
+  new BasicMatcherRulePlugin('phase'),
   ...objectMatcherRulePlugins,
   new BasicEffectRulePlugin('type'),
   new BasicEffectRulePlugin('sideEffects'),
@@ -391,7 +392,11 @@ function cloneRule(
       for (const condition of compiledRule.conditions) {
         // add support for resourceQuery
         const request =
-          condition.property === 'resourceQuery' ? query : fakeResourcePath
+          condition.property === 'resourceQuery'
+            ? query
+            : condition.property === 'phase'
+              ? 'evaluation'
+              : fakeResourcePath
         if (condition && !condition.fn(request)) {
           return false
         }
