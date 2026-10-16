@@ -198,6 +198,20 @@ test('use with postLoader', async () => {
   assertComponent(Object.assign({ expectedMsg: 'Changed!' }, result))
 })
 
+test('rules with phase', async () => {
+  const result = await mockBundleAndRun({
+    entry: 'basic.vue',
+    module: {
+      rules: [
+        { test: /\.wasm$/, phase: 'source', type: 'javascript/auto' },
+        { test: /\.wasm$/, phase: { not: 'source' }, type: 'javascript/auto' },
+      ],
+    },
+  })
+
+  assertComponent(result)
+})
+
 // #1771
 test('data: URI as entry', async () => {
   await bundle({
