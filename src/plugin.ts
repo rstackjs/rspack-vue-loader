@@ -55,7 +55,7 @@ interface RuleCondition {
 }
 
 interface BasicEffect {
-  type: 'type' | 'sideEffects' | 'parser' | 'resolve'
+  type: 'type' | 'sideEffects' | 'parser' | 'resolve' | 'extractSourceMap'
   value: any
 }
 
@@ -84,12 +84,14 @@ const ruleSetCompiler = new RuleSetCompiler([
   new BasicMatcherRulePlugin('issuer'),
   new BasicMatcherRulePlugin('compiler'),
   new BasicMatcherRulePlugin('issuerLayer'),
+  new BasicMatcherRulePlugin('scheme'),
   new BasicMatcherRulePlugin('phase'),
   ...objectMatcherRulePlugins,
   new BasicEffectRulePlugin('type'),
   new BasicEffectRulePlugin('sideEffects'),
   new BasicEffectRulePlugin('parser'),
   new BasicEffectRulePlugin('resolve'),
+  new BasicEffectRulePlugin('extractSourceMap'),
   new BasicEffectRulePlugin('generator'),
   new BasicEffectRulePlugin('layer'),
   new BasicEffectRulePlugin('with'),
@@ -346,6 +348,32 @@ const jsRuleResource = (query: qs.ParsedUrlQuery, resource: string): string =>
 
 let uid = 0
 
+// Match Rspack's scheme parser; plain and Windows paths have no scheme.
+function resourceScheme(resource: string): string {
+  const match = /^([a-z][a-z\d+-]*):/i.exec(resource)
+  if (!match) return ''
+
+  const next = resource.slice(match[0].length, match[0].length + 1)
+  if (
+    match[1].length === 1 &&
+    (!next || next === '\\' || next === '/' || next === '#' || next === '?')
+  ) {
+    return ''
+  }
+
+  switch (match[1].toLowerCase()) {
+    case 'builtin':
+      return ''
+    case 'data':
+    case 'file':
+    case 'http':
+    case 'https':
+      return match[1].toLowerCase()
+    default:
+      return match[1]
+  }
+}
+
 function cloneRule(
   rawRule: RawRule,
   refs: Map<string, any>,
@@ -396,7 +424,9 @@ function cloneRule(
             ? query
             : condition.property === 'phase'
               ? 'evaluation'
-              : fakeResourcePath
+              : condition.property === 'scheme'
+                ? resourceScheme(currentResource)
+                : fakeResourcePath
         if (condition && !condition.fn(request)) {
           return false
         }
