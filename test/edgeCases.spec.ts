@@ -212,6 +212,24 @@ test('rules with phase', async () => {
   assertComponent(result)
 })
 
+test('rules with scheme and extractSourceMap', async () => {
+  const result = await mockBundleAndRun({
+    entry: 'basic.vue',
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          scheme: /^$/,
+          extractSourceMap: true,
+          loader: require.resolve('./mock-loaders/js'),
+        },
+      ],
+    },
+  })
+
+  assertComponent(Object.assign({ expectedMsg: 'Changed!' }, result))
+})
+
 // #1771
 test('data: URI as entry', async () => {
   await bundle({
