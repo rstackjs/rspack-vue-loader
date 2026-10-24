@@ -348,32 +348,6 @@ const jsRuleResource = (query: qs.ParsedUrlQuery, resource: string): string =>
 
 let uid = 0
 
-// Match Rspack's scheme parser; plain and Windows paths have no scheme.
-function resourceScheme(resource: string): string {
-  const match = /^([a-z][a-z\d+-]*):/i.exec(resource)
-  if (!match) return ''
-
-  const next = resource.slice(match[0].length, match[0].length + 1)
-  if (
-    match[1].length === 1 &&
-    (!next || next === '\\' || next === '/' || next === '#' || next === '?')
-  ) {
-    return ''
-  }
-
-  switch (match[1].toLowerCase()) {
-    case 'builtin':
-      return ''
-    case 'data':
-    case 'file':
-    case 'http':
-    case 'https':
-      return match[1].toLowerCase()
-    default:
-      return match[1]
-  }
-}
-
 function cloneRule(
   rawRule: RawRule,
   refs: Map<string, any>,
@@ -418,15 +392,16 @@ function cloneRule(
       }
       const fakeResourcePath = ruleResource(parsed, currentResource)
       for (const condition of compiledRule.conditions) {
+        // Rspack checks the scheme condition retained on the cloned rule.
+        if (condition.property === 'scheme') continue
+
         // add support for resourceQuery
         const request =
           condition.property === 'resourceQuery'
             ? query
             : condition.property === 'phase'
               ? 'evaluation'
-              : condition.property === 'scheme'
-                ? resourceScheme(currentResource)
-                : fakeResourcePath
+              : fakeResourcePath
         if (condition && !condition.fn(request)) {
           return false
         }

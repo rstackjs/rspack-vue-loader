@@ -230,6 +230,23 @@ test('rules with scheme and extractSourceMap', async () => {
   assertComponent(Object.assign({ expectedMsg: 'Changed!' }, result))
 })
 
+test('rules with a non-matching scheme', async () => {
+  const result = await mockBundleAndRun({
+    entry: 'basic.vue',
+    module: {
+      rules: [
+        {
+          test: /\.js$/,
+          scheme: /^https$/,
+          loader: require.resolve('./mock-loaders/js'),
+        },
+      ],
+    },
+  })
+
+  assertComponent(result)
+})
+
 // #1771
 test('data: URI as entry', async () => {
   await bundle({
