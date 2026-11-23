@@ -1,5 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
+import { gte } from 'semver'
 import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
@@ -73,20 +74,56 @@ export const pitch = function () {
         return ''
       }
 
-      if (query.inline || query.module) {
-        context.emitError(
-          new Error(
-            '`inline` or `module` is currently not supported with native CSS modules'
-          )
-        )
-        return ''
-      }
-
       const loaderString = [stylePostLoaderPath, ...loaders]
         .map((loader) => {
           return typeof loader === 'string' ? loader : loader.request
         })
         .join('!')
+
+      if (query.inline != null || query.module != null) {
+        const rspackVersion = context._compiler?.webpack.rspackVersion
+        const supportsCssExportType =
+          rspackVersion != null && gte(rspackVersion, '2.1.0')
+
+        if (!supportsCssExportType) {
+          context.emitError(
+            new Error(
+              '`inline` or `module` requires Rspack >= 2.1.0 when using native CSS modules'
+            )
+          )
+          return ''
+        }
+
+        const inlineResourceQuery =
+          query.inline != null
+            ? context.resourceQuery
+            : `${context.resourceQuery}&inline`
+        const styleRequest = `${context.resourcePath}${
+          query.lang ? `.${query.lang}` : ''
+        }${inlineResourceQuery}!=!-!${loaderString}!${context.resource}`
+        const callback = context.async()
+
+        context.importModule(styleRequest).then(
+          (moduleExports) => {
+            const source =
+              typeof moduleExports === 'string'
+                ? moduleExports
+                : moduleExports?.default
+            if (typeof source !== 'string') {
+              callback(
+                new Error(
+                  'Failed to load Vue style as text when using native CSS modules'
+                )
+              )
+              return
+            }
+            callback(null, source)
+          },
+          (error) => callback(error)
+        )
+        return
+      }
+
       const styleRequest = stringifyRequest(
         context,
         `${context.resourcePath}${query.lang ? `.${query.lang}` : ''}${

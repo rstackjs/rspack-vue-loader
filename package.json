@@ -19,7 +19,7 @@
     "dev-example": "rspack dev --config example/rspack.config.js",
     "format": "rs fmt",
     "lint": "rs lint",
-    "prepare": "rs hooks",
+    "prepare": "rs hooks && tsc",
     "prepublishOnly": "tsc",
     "pretest": "tsc",
     "pretest:match-resource": "tsc",
@@ -29,7 +29,8 @@
   "packageManager": "pnpm@12.15.0",
   "dependencies": {
     "@rspack/lite-tapable": "^1.1.0",
-    "chalk": "^4.1.0"
+    "chalk": "^4.1.0",
+    "semver": "^7.8.5"
   },
   "peerDependencies": {
     "@rspack/core": "^1.0.0 || ^2.0.0"
@@ -54,6 +55,7 @@
     "@types/cssesc": "^3.0.2",
     "@types/estree": "^0.0.45",
     "@types/jsdom": "^16.2.13",
+    "@types/semver": "^7.7.1",
     "css-loader": "^7.1.5",
     "cssesc": "^3.0.0",
     "jsdom": "^16.4.0",

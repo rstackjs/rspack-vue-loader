@@ -79,11 +79,36 @@ export async function bundle(
 }> {
   let config: BundleOptions = merge(createBaseConfig(), options)
 
-  config.module?.rules?.push({
-    test: /\.css$/,
-    type: 'javascript/auto',
-    use: ['style-loader', 'css-loader'],
-  })
+  if (!options.experiments?.css) {
+    config.module?.rules?.push({
+      test: /\.css$/,
+      type: 'javascript/auto',
+      use: ['style-loader', 'css-loader'],
+    })
+  } else {
+    config.module?.rules?.push({
+      test: /\.css$/,
+      oneOf: [
+        {
+          resourceQuery: /inline/,
+          type: 'css/auto',
+          parser: {
+            exportType: 'text',
+          },
+        },
+        {
+          resourceQuery: /module/,
+          type: 'css/module',
+          parser: {
+            namedExports: false,
+          },
+        },
+        {
+          type: 'css/auto',
+        },
+      ],
+    })
+  }
 
   if (config.vue && config.module) {
     const vueOptions = {

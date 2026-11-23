@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { pitch } from 'rspack-vue-loader/pitcher'
 import {
   mfs,
   bundle,
@@ -6,6 +7,41 @@ import {
   normalizeNewline,
   DEFAULT_VUE_USE,
 } from './utils'
+
+test('requires Rspack >= 2.1.0 for built-in CSS modules', () => {
+  const emitError = rstest.fn()
+  const result = pitch.call({
+    resourcePath: '/test.vue',
+    resourceQuery: '?vue&type=style&module=&lang=css',
+    resource: '/test.vue?vue&type=style&module=&lang=css',
+    loaders: [],
+    query: {
+      experimentalInlineMatchResource: true,
+    },
+    _module: {
+      type: 'css/module',
+    },
+    _compiler: {
+      options: {
+        experiments: {
+          css: true,
+        },
+      },
+      webpack: {
+        rspackVersion: '2.0.99',
+      },
+    },
+    emitError,
+  } as any)
+
+  expect(result).toBe('')
+  expect(emitError).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message:
+        '`inline` or `module` requires Rspack >= 2.1.0 when using native CSS modules',
+    })
+  )
+})
 
 // @ts-ignore
 function assertComponent({
