@@ -89,12 +89,12 @@ export const pitch = function () {
       if (query.inline != null || query.module != null) {
         const rspackVersion = context._compiler?.webpack.rspackVersion
         const supportsCssExportType =
-          rspackVersion != null && gte(rspackVersion, '2.1.0')
+          rspackVersion != null && gte(rspackVersion, '2.2.0')
 
         if (!supportsCssExportType) {
           context.emitError(
             new Error(
-              '`inline` or `module` requires Rspack >= 2.1.0 when using native CSS modules'
+              '`inline` or `module` requires Rspack >= 2.2.0 when using native CSS modules'
             )
           )
           return ''

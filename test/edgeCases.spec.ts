@@ -8,7 +8,7 @@ import {
   DEFAULT_VUE_USE,
 } from './utils'
 
-test('requires Rspack >= 2.1.0 for built-in CSS modules', () => {
+test('requires Rspack >= 2.2.0 for built-in CSS modules', () => {
   const emitError = rstest.fn()
   const result = pitch.call({
     resourcePath: '/test.vue',
@@ -28,7 +28,7 @@ test('requires Rspack >= 2.1.0 for built-in CSS modules', () => {
         },
       },
       webpack: {
-        rspackVersion: '2.0.99',
+        rspackVersion: '2.1.99',
       },
     },
     emitError,
@@ -38,7 +38,7 @@ test('requires Rspack >= 2.1.0 for built-in CSS modules', () => {
   expect(emitError).toHaveBeenCalledWith(
     expect.objectContaining({
       message:
-        '`inline` or `module` requires Rspack >= 2.1.0 when using native CSS modules',
+        '`inline` or `module` requires Rspack >= 2.2.0 when using native CSS modules',
     })
   )
 })
