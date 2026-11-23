@@ -74,11 +74,17 @@ export const pitch = function () {
         return ''
       }
 
-      const loaderString = [stylePostLoaderPath, ...loaders]
-        .map((loader) => {
-          return typeof loader === 'string' ? loader : loader.request
-        })
-        .join('!')
+      const loaderStrings = [stylePostLoaderPath, ...loaders].map((loader) => {
+        return typeof loader === 'string' ? loader : loader.request
+      })
+      const createStyleRequest = (resourceQuery: string) =>
+        [
+          context.resourcePath,
+          query.lang ? `.${query.lang}` : '',
+          resourceQuery,
+          '!=!-!',
+          [...loaderStrings, context.resource].join('!'),
+        ].join('')
 
       if (query.inline != null || query.module != null) {
         const rspackVersion = context._compiler?.webpack.rspackVersion
@@ -98,9 +104,7 @@ export const pitch = function () {
           query.inline != null
             ? context.resourceQuery
             : `${context.resourceQuery}&inline`
-        const styleRequest = `${context.resourcePath}${
-          query.lang ? `.${query.lang}` : ''
-        }${inlineResourceQuery}!=!-!${loaderString}!${context.resource}`
+        const styleRequest = createStyleRequest(inlineResourceQuery)
         const callback = context.async()
 
         context.importModule(styleRequest).then(
@@ -126,9 +130,7 @@ export const pitch = function () {
 
       const styleRequest = stringifyRequest(
         context,
-        `${context.resourcePath}${query.lang ? `.${query.lang}` : ''}${
-          context.resourceQuery
-        }!=!-!${loaderString}!${context.resource}`
+        createStyleRequest(context.resourceQuery)
       )
       return `@import ${styleRequest};`
     }

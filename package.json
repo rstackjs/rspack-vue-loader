@@ -17,6 +17,7 @@
     "check": "rs check",
     "dev": "tsc --watch",
     "dev-example": "rspack dev --config example/rspack.config.js",
+    "directory-size": "node scripts/directory-size.js",
     "format": "rs fmt",
     "lint": "rs lint",
     "prepare": "rs hooks && tsc",
