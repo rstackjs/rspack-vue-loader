@@ -371,7 +371,7 @@ To also support `<style module>` and [custom element](#customelement) inline sty
 }
 ```
 
-Keep the `/inline/` rule before `/module/`: the loader uses `&inline` both for custom element styles and internally when loading `<style module>` text for Rspack's `css/module` parser, and `namedExports: false` provides the default export expected for `$style` and `useCssModule()`.
+In this `oneOf` rule, `/inline/` (`parser.exportType: 'text'`) handles custom element inline styles, `/module/` (`type: 'css/module'` with `parser.namedExports: false`) handles `<style module>` and provides the default export expected for `$style` and `useCssModule()`, and the fallback `type: 'css/auto'` handles regular and scoped styles.
 
 On Rspack `< 2.2.0`, built-in CSS only supports regular and scoped styles; `<style module>` and custom element inline styles require the `css-loader` configuration.
 

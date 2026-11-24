@@ -8,6 +8,7 @@ const selfPath = require.resolve('./index')
 // const templateLoaderPath = require.resolve('./templateLoader')
 const stylePostLoaderPath = require.resolve('./stylePostLoader')
 const styleInlineLoaderPath = require.resolve('./styleInlineLoader')
+const styleRawLoaderPath = require.resolve('./styleRawLoader')
 
 // @types/webpack doesn't provide the typing for loaderContext.loaders...
 type Loader = LoaderContext<VueLoaderOptions>['loaders'][number]
@@ -77,14 +78,6 @@ export const pitch = function () {
       const loaderStrings = [stylePostLoaderPath, ...loaders].map((loader) => {
         return typeof loader === 'string' ? loader : loader.request
       })
-      const createStyleRequest = (resourceQuery: string) =>
-        [
-          context.resourcePath,
-          query.lang ? `.${query.lang}` : '',
-          resourceQuery,
-          '!=!-!',
-          [...loaderStrings, context.resource].join('!'),
-        ].join('')
 
       if (query.inline != null || query.module != null) {
         const rspackVersion = context._compiler?.webpack.rspackVersion
@@ -100,19 +93,18 @@ export const pitch = function () {
           return ''
         }
 
-        const inlineResourceQuery =
-          query.inline != null
-            ? context.resourceQuery
-            : `${context.resourceQuery}&inline`
-        const styleRequest = createStyleRequest(inlineResourceQuery)
+        const styleRequest = [
+          context.resourcePath,
+          '.mjs!=!!',
+          [styleRawLoaderPath, ...loaderStrings, context.resource].join('!'),
+        ].join('')
         const callback = context.async()
 
         context.importModule(styleRequest).then(
           (moduleExports) => {
-            const source =
-              typeof moduleExports === 'string'
-                ? moduleExports
-                : moduleExports?.default
+            const result = moduleExports?.default ?? moduleExports
+            const source = typeof result === 'string' ? result : result?.source
+            const map = typeof result === 'object' ? result?.map : undefined
             if (typeof source !== 'string') {
               callback(
                 new Error(
@@ -121,7 +113,7 @@ export const pitch = function () {
               )
               return
             }
-            callback(null, source)
+            callback(null, source, map)
           },
           (error) => callback(error)
         )
@@ -130,7 +122,13 @@ export const pitch = function () {
 
       const styleRequest = stringifyRequest(
         context,
-        createStyleRequest(context.resourceQuery)
+        [
+          context.resourcePath,
+          query.lang ? `.${query.lang}` : '',
+          context.resourceQuery,
+          '!=!-!',
+          [...loaderStrings, context.resource].join('!'),
+        ].join('')
       )
       return `@import ${styleRequest};`
     }

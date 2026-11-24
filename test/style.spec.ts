@@ -1,4 +1,5 @@
 import cssesc from 'cssesc'
+import { SourceMapConsumer } from 'source-map'
 import {
   bundle,
   mockBundleAndRun,
@@ -54,6 +55,119 @@ test('built-in CSS exports inline styles for custom elements', async () => {
 
   expect(componentModule.styles).toHaveLength(1)
   expect(componentModule.styles[0]).toContain('color: red')
+})
+
+test('built-in CSS resolves asset URLs in CSS modules with empty publicPath', async () => {
+  const { instance, stats } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules-asset.vue',
+    output: {
+      publicPath: '',
+    },
+    module: {
+      rules: [
+        {
+          test: /\.png$/,
+          type: 'asset/resource',
+        },
+      ],
+    },
+  })
+
+  expect(instance.$style.banner).toBeDefined()
+  expect(instance.$el.className).toBe(instance.$style.banner)
+
+  const assets = stats.toJson({ assets: true }).assets ?? []
+  const pngAssets = assets.filter((asset) => asset.name.endsWith('.png'))
+  const cssAssets = assets.filter((asset) => asset.name.endsWith('.css'))
+
+  expect(pngAssets).toHaveLength(1)
+  expect(cssAssets.length).toBeGreaterThan(0)
+
+  const css = normalizeNewline(
+    cssAssets
+      .map((asset) => mfs.readFileSync(`/${asset.name}`).toString())
+      .join('\n')
+  )
+  expect(css).toContain(pngAssets[0].name)
+  expect(css).not.toContain('./logo.png')
+})
+
+test('built-in CSS resolves asset URLs in custom element inline styles with empty publicPath', async () => {
+  const { componentModule, stats } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'custom-element-asset.ce.vue',
+    output: {
+      publicPath: '',
+    },
+    module: {
+      rules: [
+        {
+          test: /\.png$/,
+          type: 'asset/resource',
+        },
+      ],
+    },
+  })
+
+  expect(componentModule.styles).toHaveLength(1)
+
+  const assets = stats.toJson({ assets: true }).assets ?? []
+  const pngAssets = assets.filter((asset) => asset.name.endsWith('.png'))
+
+  expect(pngAssets).toHaveLength(1)
+  expect(componentModule.styles[0]).toContain('color: red')
+  expect(componentModule.styles[0]).toContain(pngAssets[0].name)
+  expect(componentModule.styles[0]).not.toContain('./logo.png')
+})
+
+test('built-in CSS preserves preprocessor source maps for CSS modules', async () => {
+  const { stats } = await bundle({
+    ...builtinCssOptions,
+    entry: 'css-modules.vue',
+    devtool: 'source-map',
+    modify: (config: any) => {
+      const cssRule = config.module.rules.find(
+        (r: any) => r.test instanceof RegExp && r.test.test('.css')
+      )
+      const moduleRule = cssRule.oneOf.find(
+        (r: any) =>
+          r.resourceQuery instanceof RegExp && r.resourceQuery.test('?module')
+      )
+      moduleRule.use = [require.resolve('./mock-loaders/css-sourcemap')]
+    },
+  })
+
+  const cssAssets = (stats.toJson({ assets: true }).assets ?? []).filter(
+    (asset) => asset.name.endsWith('.css')
+  )
+  expect(cssAssets.length).toBeGreaterThan(0)
+
+  const cssAsset = cssAssets[0]
+  const css = normalizeNewline(mfs.readFileSync(`/${cssAsset.name}`).toString())
+  const rawMap = mfs.readFileSync(`/${cssAsset.name}.map`).toString()
+
+  expect(css).toContain('/* injected-1 */')
+
+  const scopeId = `data-v-${genId('css-modules.vue')}`
+  const lines = css.split('\n')
+  const scopedSelectorLine = lines.findIndex((line) => line.includes(scopeId))
+  expect(scopedSelectorLine).toBeGreaterThan(-1)
+
+  const declLineIndex = lines.findIndex(
+    (line, index) => index > scopedSelectorLine && line.includes('color: red;')
+  )
+  expect(declLineIndex).toBeGreaterThan(-1)
+
+  const smc = new SourceMapConsumer(JSON.parse(rawMap))
+  const pos = smc.originalPositionFor({
+    line: declLineIndex + 1,
+    column: lines[declLineIndex].indexOf('color'),
+  })
+
+  expect(pos.source).toMatch(/test\/fixtures\/css-modules\.vue$/)
+  expect(pos.line).toBe(15)
+  expect(pos.column).toBe(2)
 })
 
 test('scoped style', async () => {
