@@ -13,6 +13,18 @@ export function isNativeCSSModule(type?: string) {
   )
 }
 
+export const STYLE_PITCH_QUERY = '__vue_pitch__'
+
+export function stripStylePitchQuery(resourceQuery: string): string {
+  return resourceQuery
+    .replace(
+      new RegExp(`([?&])${STYLE_PITCH_QUERY}(?:=[^&]*)?(?=&|$)`, 'g'),
+      (_, sep) => (sep === '?' ? '?' : '')
+    )
+    .replace(/^\?&/, '?')
+    .replace(/^\?$/, '')
+}
+
 export function needHMR(
   vueLoaderOptions: VueLoaderOptions,
   compilerOptions: Compiler['options']
@@ -49,7 +61,9 @@ export function resolveTemplateTSOptions(
 
 // loader utils removed getOptions in 3.x, but it's not available on webpack 4
 // loader context
-export function getOptions(loaderContext: LoaderContext<VueLoaderOptions>) {
+export function getOptions<T = VueLoaderOptions>(
+  loaderContext: LoaderContext<T>
+) {
   const query = loaderContext.query
 
   if (typeof query === 'string' && query !== '') {

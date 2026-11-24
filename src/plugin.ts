@@ -1,7 +1,7 @@
 import * as qs from 'querystring'
 import type { VueLoaderOptions } from '.'
 import type { RuleSetRule, Compiler, RuleSetUse } from '@rspack/core'
-import { needHMR } from './util'
+import { needHMR, STYLE_PITCH_QUERY } from './util'
 import { invalidateScript, typeDepToSFCMap } from './resolveScript'
 import { compiler as vueCompiler } from './compiler'
 import { descriptorCache } from './descriptorCache'
@@ -258,6 +258,44 @@ class VueLoaderPlugin {
         ...clonedRules,
         ...vueLoaderRules,
       ]
+
+      compiler.hooks.afterPlugins.tap({ name: id, stage: 1000 }, () => {
+        compiler.options.module!.rules.push(
+          {
+            resourceQuery: (query?: string) => {
+              if (!query) {
+                return false
+              }
+              const parsed = qs.parse(query.slice(1))
+              return (
+                parsed.vue != null &&
+                parsed.type === 'style' &&
+                parsed[STYLE_PITCH_QUERY] != null
+              )
+            },
+            type: 'javascript/auto',
+            sideEffects: true,
+          },
+          {
+            enforce: 'post',
+            loader: require.resolve('./stylePostLoader'),
+            options: {
+              nativeOnly: true,
+            },
+            resourceQuery: (query?: string) => {
+              if (!query) {
+                return false
+              }
+              const parsed = qs.parse(query.slice(1))
+              return (
+                parsed.vue != null &&
+                parsed.type === 'style' &&
+                parsed[STYLE_PITCH_QUERY] == null
+              )
+            },
+          }
+        )
+      })
     } else {
       compiler.options.module!.rules = [
         pitcher,

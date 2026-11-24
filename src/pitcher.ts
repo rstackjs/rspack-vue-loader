@@ -1,6 +1,11 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
-import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
+import {
+  getOptions,
+  isNativeCSSModule,
+  stringifyRequest,
+  stripStylePitchQuery,
+} from './util'
 import { VueLoaderOptions } from '.'
 
 const selfPath = require.resolve('./index')
@@ -87,11 +92,13 @@ export const pitch = function () {
           return typeof loader === 'string' ? loader : loader.request
         })
         .join('!')
+      const resourceQuery = stripStylePitchQuery(context.resourceQuery)
+      const resource = context.resourcePath + resourceQuery
       const styleRequest = stringifyRequest(
         context,
-        `${context.resourcePath}${query.lang ? `.${query.lang}` : ''}${
-          context.resourceQuery
-        }!=!-!${loaderString}!${context.resource}`
+        `${context.resourcePath}${
+          query.lang ? `.${query.lang}` : ''
+        }${resourceQuery}!=!-!${loaderString}!${resource}`
       )
       return `@import ${styleRequest};`
     }
@@ -111,6 +118,13 @@ export const pitch = function () {
         (query.lang as string) || 'css'
       )
     }
+
+    return genProxyModule(
+      loaders,
+      context,
+      !!query.module || query.inline != null,
+      (query.lang as string) || 'css'
+    )
   }
 
   // if a custom block has no other matching loader other than vue-loader itself
@@ -156,14 +170,15 @@ function genRequest(
   const loaderStrings = loaders.map((loader) => {
     return typeof loader === 'string' ? loader : loader.request
   })
-  const resource = context.resourcePath + context.resourceQuery
+  const resourceQuery = stripStylePitchQuery(context.resourceQuery)
+  const resource = context.resourcePath + resourceQuery
 
   if (enableInlineMatchResource) {
     return stringifyRequest(
       context,
-      `${context.resourcePath}${lang ? `.${lang}` : ''}${
-        context.resourceQuery
-      }!=!-!${[...loaderStrings, resource].join('!')}`
+      `${context.resourcePath}${
+        lang ? `.${lang}` : ''
+      }${resourceQuery}!=!-!${[...loaderStrings, resource].join('!')}`
     )
   }
 

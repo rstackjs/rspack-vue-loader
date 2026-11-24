@@ -23,6 +23,7 @@ import {
   getOptions,
   stringifyRequest as _stringifyRequest,
   genMatchResource,
+  STYLE_PITCH_QUERY,
 } from './util'
 
 export { VueLoaderPlugin }
@@ -290,7 +291,10 @@ export default function loader(
         const idQuery = !style.src || style.scoped ? `&id=${id}` : ``
         const inlineQuery = asCustomElement ? `&inline` : ``
         const externalQuery = style.src ? `&external` : ``
-        const query = `?vue&type=style&index=${i}${idQuery}${inlineQuery}${attrsQuery}${resourceQuery}${externalQuery}`
+        const pitchQuery = enableInlineMatchResource
+          ? `&${STYLE_PITCH_QUERY}`
+          : ``
+        const query = `?vue&type=style&index=${i}${idQuery}${inlineQuery}${attrsQuery}${resourceQuery}${externalQuery}${pitchQuery}`
 
         let styleRequest
         if (enableInlineMatchResource) {
