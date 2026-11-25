@@ -1,11 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
-import {
-  getOptions,
-  isNativeCSSModule,
-  stringifyRequest,
-  stripStylePitchQuery,
-} from './util'
+import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
 const selfPath = require.resolve('./index')
@@ -21,14 +16,19 @@ const isNullLoader = (l: Loader) => /(\/|\\|@)null-loader/.test(l.path)
 const isCSSLoader = (l: Loader) => /(\/|\\|@)css-loader/.test(l.path)
 const isCacheLoader = (l: Loader) => /(\/|\\|@)cache-loader/.test(l.path)
 const isNotPitcher = (l: Loader) => l.path !== __filename
+const isStylePostLoader = (l: Loader) => l.path === stylePostLoaderPath
 
-const pitcher: LoaderDefinitionFunction = (code) => code
+const pitcher: LoaderDefinitionFunction = function (code, map) {
+  this.callback(null, code, map)
+}
 
 // This pitching loader is responsible for intercepting all vue block requests
 // and transform it into appropriate requests.
 export const pitch = function () {
   const context = this as LoaderContext<VueLoaderOptions>
-  const rawLoaders = context.loaders.filter(isNotPitcher)
+  const rawLoaders = context.loaders.filter(
+    (l) => isNotPitcher(l) && !isStylePostLoader(l)
+  )
   let loaders = rawLoaders
 
   // do not inject if user uses null-loader to void the type (#1239)
@@ -66,9 +66,8 @@ export const pitch = function () {
   const options = (getOptions(context) || {}) as VueLoaderOptions
   if (query.type === `style`) {
     if (isNativeCSSModule(context._module?.type)) {
-      // If the current module uses native CSS, emit CSS code directly.
-      // Although we can target requests like `xxx.vue?type=style` to match `type: "css"`,
-      // it will make the plugin a mess.
+      // If the current module uses native CSS, pass it through directly so
+      // Rspack's built-in CSS pipeline handles parsing and exports.
       if (!options.experimentalInlineMatchResource) {
         context.emitError(
           new Error(
@@ -78,29 +77,7 @@ export const pitch = function () {
         return ''
       }
 
-      if (query.inline || query.module) {
-        context.emitError(
-          new Error(
-            '`inline` or `module` is currently not supported with native CSS modules'
-          )
-        )
-        return ''
-      }
-
-      const loaderString = [stylePostLoaderPath, ...loaders]
-        .map((loader) => {
-          return typeof loader === 'string' ? loader : loader.request
-        })
-        .join('!')
-      const resourceQuery = stripStylePitchQuery(context.resourceQuery)
-      const resource = context.resourcePath + resourceQuery
-      const styleRequest = stringifyRequest(
-        context,
-        `${context.resourcePath}${
-          query.lang ? `.${query.lang}` : ''
-        }${resourceQuery}!=!-!${loaderString}!${resource}`
-      )
-      return `@import ${styleRequest};`
+      return
     }
     const cssLoaderIndex = loaders.findIndex(isCSSLoader)
     if (cssLoaderIndex > -1) {
@@ -170,22 +147,26 @@ function genRequest(
   const loaderStrings = loaders.map((loader) => {
     return typeof loader === 'string' ? loader : loader.request
   })
-  const resourceQuery = stripStylePitchQuery(context.resourceQuery)
-  const resource = context.resourcePath + resourceQuery
+  const resource = context.resourcePath + context.resourceQuery
+  const inlineLoaderRequest = [
+    '-!',
+    [...loaderStrings, resource].join('!'),
+  ].join('')
 
   if (enableInlineMatchResource) {
     return stringifyRequest(
       context,
-      `${context.resourcePath}${
-        lang ? `.${lang}` : ''
-      }${resourceQuery}!=!-!${[...loaderStrings, resource].join('!')}`
+      [
+        context.resourcePath,
+        lang ? `.${lang}` : '',
+        context.resourceQuery,
+        '!=!',
+        inlineLoaderRequest,
+      ].join('')
     )
   }
 
-  return stringifyRequest(
-    context,
-    '-!' + [...loaderStrings, resource].join('!')
-  )
+  return stringifyRequest(context, inlineLoaderRequest)
 }
 
 function shouldIgnoreCustomBlock(loaders: Loader[]) {

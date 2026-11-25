@@ -1,7 +1,7 @@
 import * as qs from 'querystring'
 import type { VueLoaderOptions } from '.'
 import type { RuleSetRule, Compiler, RuleSetUse } from '@rspack/core'
-import { needHMR, STYLE_PITCH_QUERY } from './util'
+import { needHMR } from './util'
 import { invalidateScript, typeDepToSFCMap } from './resolveScript'
 import { compiler as vueCompiler } from './compiler'
 import { descriptorCache } from './descriptorCache'
@@ -173,10 +173,14 @@ class VueLoaderPlugin {
     // for each user rule (except the vue rule), create a cloned rule
     // that targets the corresponding language blocks in *.vue files.
     const refs = new Map()
+    const blockRuleCheck = enableInlineMatchResource
+      ? (query: qs.ParsedUrlQuery, rule: CompiledRule): boolean =>
+          query.type !== 'style' && langBlockRuleCheck(query, rule)
+      : langBlockRuleCheck
     const clonedRules = rules
       .filter((r) => r !== rawVueRule)
       .map((rawRule) =>
-        cloneRule(rawRule, refs, langBlockRuleCheck, langBlockRuleResource)
+        cloneRule(rawRule, refs, blockRuleCheck, langBlockRuleResource)
       )
 
     // fix conflict with config.loader and config.options when using config.use
@@ -251,51 +255,29 @@ class VueLoaderPlugin {
         )
       })
 
+      const stylePostRule: RuleSetRule = {
+        enforce: 'post',
+        loader: require.resolve('./stylePostLoader'),
+        options: {
+          nativeOnly: true,
+        },
+        resourceQuery: (query?: string) => {
+          if (!query) {
+            return false
+          }
+          const parsed = qs.parse(query.slice(1))
+          return parsed.vue != null && parsed.type === 'style'
+        },
+      }
+
       compiler.options.module!.rules = [
         pitcher,
+        stylePostRule,
         ...rules.filter((rule) => !vueLoaderRules.includes(rule)),
         templateCompilerRule,
         ...clonedRules,
         ...vueLoaderRules,
       ]
-
-      compiler.hooks.afterPlugins.tap({ name: id, stage: 1000 }, () => {
-        compiler.options.module!.rules.push(
-          {
-            resourceQuery: (query?: string) => {
-              if (!query) {
-                return false
-              }
-              const parsed = qs.parse(query.slice(1))
-              return (
-                parsed.vue != null &&
-                parsed.type === 'style' &&
-                parsed[STYLE_PITCH_QUERY] != null
-              )
-            },
-            type: 'javascript/auto',
-            sideEffects: true,
-          },
-          {
-            enforce: 'post',
-            loader: require.resolve('./stylePostLoader'),
-            options: {
-              nativeOnly: true,
-            },
-            resourceQuery: (query?: string) => {
-              if (!query) {
-                return false
-              }
-              const parsed = qs.parse(query.slice(1))
-              return (
-                parsed.vue != null &&
-                parsed.type === 'style' &&
-                parsed[STYLE_PITCH_QUERY] == null
-              )
-            },
-          }
-        )
-      })
     } else {
       compiler.options.module!.rules = [
         pitcher,

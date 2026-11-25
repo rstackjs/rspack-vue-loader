@@ -13,18 +13,6 @@ export function isNativeCSSModule(type?: string) {
   )
 }
 
-export const STYLE_PITCH_QUERY = '__vue_pitch__'
-
-export function stripStylePitchQuery(resourceQuery: string): string {
-  return resourceQuery
-    .replace(
-      new RegExp(`([?&])${STYLE_PITCH_QUERY}(?:=[^&]*)?(?=&|$)`, 'g'),
-      (_, sep) => (sep === '?' ? '?' : '')
-    )
-    .replace(/^\?&/, '?')
-    .replace(/^\?$/, '')
-}
-
 export function needHMR(
   vueLoaderOptions: VueLoaderOptions,
   compilerOptions: Compiler['options']
@@ -210,9 +198,12 @@ export function genMatchResource(
       .map((obj) => obj.request)
     loaders.push(...currentRequest)
   }
-  const loaderString = loaders.join('!')
-
-  return `${resourcePath}${lang ? `.${lang}` : ''}${resourceQuery}!=!${
-    loaderString ? `${loaderString}!` : ''
-  }${resourcePath}${resourceQuery}`
+  const resource = `${resourcePath}${resourceQuery}`
+  return [
+    resourcePath,
+    lang ? `.${lang}` : '',
+    resourceQuery,
+    '!=!',
+    [...loaders, resource].join('!'),
+  ].join('')
 }

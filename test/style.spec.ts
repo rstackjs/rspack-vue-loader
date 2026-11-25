@@ -171,6 +171,7 @@ test('built-in CSS preserves preprocessor source maps for CSS modules', async ()
   const rawMap = mfs.readFileSync(`/${cssAsset.name}.map`).toString()
 
   expect(css).toContain('/* injected-1 */')
+  expect(css.match(/\/\* injected-1 \*\//g)).toHaveLength(2)
 
   const scopeId = `data-v-${genId('css-modules.vue')}`
   const lines = css.split('\n')
