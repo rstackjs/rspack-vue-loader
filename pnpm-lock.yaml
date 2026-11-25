@@ -172,6 +172,9 @@ importers:
       chalk:
         specifier: ^4.1.0
         version: 4.1.2
+      semver:
+        specifier: ^7.8.6
+        version: 7.8.6
     devDependencies:
       '@intlify/vue-i18n-loader':
         specifier: ^3.0.0
@@ -197,6 +200,9 @@ importers:
       '@types/jsdom':
         specifier: ^16.2.13
         version: 16.2.15
+      '@types/semver':
+        specifier: ^7.8.0
+        version: 7.8.0
       css-loader:
         specifier: ^7.1.5
         version: 7.1.5(@rspack/core@2.3.4(@swc/helpers@0.5.23))(webpack@5.106.2(clean-css@4.2.4)(postcss@8.5.14)(uglify-js@2.8.29))
@@ -837,6 +843,9 @@ packages:
 
   '@types/parse5@6.0.3':
     resolution: {integrity: sha512-SuT16Q1K51EAVPz1K29DJ/sXjhSQ0zjvsypYJ6tlwVsRV9jwW5Adq2ch8Dq8kDBCkYnELS7N7VNCSB5nC56t/g==}
+
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
@@ -1731,8 +1740,8 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.8.0:
-    resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -2456,6 +2465,8 @@ snapshots:
 
   '@types/parse5@6.0.3': {}
 
+  '@types/semver@7.8.0': {}
+
   '@types/tough-cookie@4.0.5': {}
 
   '@vue/compiler-core@3.5.34':
@@ -2812,7 +2823,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.14)
       postcss-modules-values: 4.0.0(postcss@8.5.14)
       postcss-value-parser: 4.2.0
-      semver: 7.8.0
+      semver: 7.8.6
     optionalDependencies:
       '@rspack/core': 2.3.4(@swc/helpers@0.5.23)
       webpack: 5.106.2(clean-css@4.2.4)(postcss@8.5.14)(uglify-js@2.8.29)
@@ -3384,7 +3395,7 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.8.0: {}
+  semver@7.8.6: {}
 
   source-map-js@1.2.1: {}
 

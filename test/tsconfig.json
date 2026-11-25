@@ -18,6 +18,7 @@
     "types": ["rstack/test/globals"],
     "paths": {
       "rspack-vue-loader": ["../src/index.ts"],
+      "rspack-vue-loader/pitcher": ["../src/pitcher.ts"],
       "src": ["../src"]
     }
   }

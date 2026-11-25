@@ -29,7 +29,8 @@
   "packageManager": "pnpm@12.15.0",
   "dependencies": {
     "@rspack/lite-tapable": "^1.1.0",
-    "chalk": "^4.1.0"
+    "chalk": "^4.1.0",
+    "semver": "^7.8.6"
   },
   "peerDependencies": {
     "@rspack/core": "^2.3.0"
@@ -54,6 +55,7 @@
     "@types/cssesc": "^3.0.2",
     "@types/estree": "^0.0.45",
     "@types/jsdom": "^16.2.13",
+    "@types/semver": "^7.8.0",
     "css-loader": "^7.1.5",
     "cssesc": "^3.0.0",
     "jsdom": "^16.4.0",

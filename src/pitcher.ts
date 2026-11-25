@@ -1,5 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
+import { gte, valid } from 'semver'
 import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
@@ -75,6 +76,22 @@ export const pitch = function () {
           )
         )
         return ''
+      }
+
+      if (query.inline != null || query.module != null) {
+        const rspackVersion = context._compiler?.webpack.rspackVersion
+        if (
+          !rspackVersion ||
+          !valid(rspackVersion) ||
+          !gte(rspackVersion, '2.3.0')
+        ) {
+          context.emitError(
+            new Error(
+              '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules'
+            )
+          )
+          return ''
+        }
       }
 
       return

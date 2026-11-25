@@ -1,5 +1,6 @@
 import cssesc from 'cssesc'
 import { SourceMapConsumer } from 'source-map'
+import { pitch } from 'rspack-vue-loader/pitcher'
 import {
   bundle,
   mockBundleAndRun,
@@ -251,6 +252,69 @@ test('built-in CSS requires experimentalInlineMatchResource', async () => {
   expect(stats.toString({ all: false, errors: true })).toContain(
     '`experimentalInlineMatchResource` should be enabled when using native CSS modules'
   )
+})
+
+test('built-in CSS requires Rspack >= 2.3.0 for inline and module styles', () => {
+  const runPitch = (
+    resourceQuery: string,
+    type: string,
+    rspackVersion: string
+  ) => {
+    const emitError = rstest.fn()
+    const result = pitch.call({
+      resourcePath: '/test.vue',
+      resourceQuery,
+      resource: `/test.vue${resourceQuery}`,
+      loaders: [],
+      query: {
+        experimentalInlineMatchResource: true,
+      },
+      _module: {
+        type,
+      },
+      _compiler: {
+        webpack: {
+          rspackVersion,
+        },
+      },
+      emitError,
+    } as any)
+    return { result, emitError }
+  }
+
+  const belowMinModule = runPitch(
+    '?vue&type=style&module=true&lang=css',
+    'css/module',
+    '2.2.99'
+  )
+  expect(belowMinModule.result).toBe('')
+  expect(belowMinModule.emitError).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message:
+        '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules',
+    })
+  )
+
+  const prereleaseInline = runPitch(
+    '?vue&type=style&inline&lang=css',
+    'css/auto',
+    '2.3.0-beta.0'
+  )
+  expect(prereleaseInline.result).toBe('')
+  expect(prereleaseInline.emitError).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message:
+        '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules',
+    })
+  )
+
+  const supportedModule = runPitch(
+    '?vue&type=style&module=true&lang=css',
+    'css/module',
+    '2.3.0'
+  )
+  expect(supportedModule.result).toBeUndefined()
+  expect(supportedModule.emitError).not.toHaveBeenCalled()
 })
 
 test('scoped style', async () => {
