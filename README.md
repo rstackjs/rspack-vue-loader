@@ -24,7 +24,7 @@ For Rsbuild projects, we recommend [@rsbuild/plugin-vue](https://rsbuild.rs/plug
 
 ## Installation
 
-Requires Rspack `^1.0.0 || ^2.0.0` and Vue 3. The loader resolves the SFC compiler from `vue/compiler-sfc` (included in Vue 3.2.13 and later), falling back to `@vue/compiler-sfc`. If you install `@vue/compiler-sfc` separately, keep its version aligned with `vue`.
+Requires Rspack `^2.3.0` and Vue 3. The loader resolves the SFC compiler from `vue/compiler-sfc` (included in Vue 3.2.13 and later), falling back to `@vue/compiler-sfc`. If you install `@vue/compiler-sfc` separately, keep its version aligned with `vue`.
 
 ```bash
 # npm
@@ -326,7 +326,7 @@ Use this configuration for browser builds. Do not combine `style-loader` and `Cs
 
 ### Built-in CSS
 
-With Rspack 2, you can use built-in CSS processing by replacing the Vue and CSS rules with:
+You can use Rspack's built-in CSS processing by replacing the Vue and CSS rules with:
 
 ```js
 {
@@ -342,7 +342,7 @@ With Rspack 2, you can use built-in CSS processing by replacing the Vue and CSS 
 },
 ```
 
-Keep `VueLoaderPlugin` and remove `CssExtractRspackPlugin` if no other rules use CSS extraction. This path processes CSS without `css-loader`. With Rspack 1, also enable `experiments.css` in the Rspack config.
+Keep `VueLoaderPlugin` and remove `CssExtractRspackPlugin` if no other rules use CSS extraction. This path processes CSS without `css-loader`.
 
 To also support `<style module>` and [custom element](#customelement) inline styles with built-in CSS, configure the CSS rule with `oneOf`:
 
@@ -373,7 +373,7 @@ To also support `<style module>` and [custom element](#customelement) inline sty
 
 In this `oneOf` rule:
 
-- `/inline/` (`parser.exportType: 'text'`, requires Rspack `>= 2.1.3`) handles custom element inline styles.
+- `/inline/` (`parser.exportType: 'text'`) handles custom element inline styles.
 - `/module/` (`type: 'css/module'` with `parser.namedExports: false`) handles `<style module>` and provides the default export expected for `$style` and `useCssModule()`.
 - The fallback `type: 'css/auto'` handles regular and scoped styles.
 
@@ -578,7 +578,7 @@ import MyElement from './MyElement.element.vue'
 customElements.define('my-element', defineCustomElement(MyElement))
 ```
 
-Use the CSS rule from the [CSS extraction](#css-extraction) example, or the [built-in CSS](#built-in-css) `inline` rule (`parser.exportType: 'text'`, requires Rspack `>= 2.1.3`). In custom element mode with `css-loader`, the loader bypasses CSS extraction and inlines the styles automatically. CSS Modules are not supported in this mode.
+Use the CSS rule from the [CSS extraction](#css-extraction) example, or the [built-in CSS](#built-in-css) `inline` rule (`parser.exportType: 'text'`). In custom element mode with `css-loader`, the loader bypasses CSS extraction and inlines the styles automatically. CSS Modules are not supported in this mode.
 
 ### hotReload
 
