@@ -173,10 +173,14 @@ class VueLoaderPlugin {
     // for each user rule (except the vue rule), create a cloned rule
     // that targets the corresponding language blocks in *.vue files.
     const refs = new Map()
+    const blockRuleCheck = enableInlineMatchResource
+      ? (query: qs.ParsedUrlQuery, rule: CompiledRule): boolean =>
+          query.type !== 'style' && langBlockRuleCheck(query, rule)
+      : langBlockRuleCheck
     const clonedRules = rules
       .filter((r) => r !== rawVueRule)
       .map((rawRule) =>
-        cloneRule(rawRule, refs, langBlockRuleCheck, langBlockRuleResource)
+        cloneRule(rawRule, refs, blockRuleCheck, langBlockRuleResource)
       )
 
     // fix conflict with config.loader and config.options when using config.use
@@ -251,8 +255,24 @@ class VueLoaderPlugin {
         )
       })
 
+      const stylePostRule: RuleSetRule = {
+        enforce: 'post',
+        loader: require.resolve('./stylePostLoader'),
+        options: {
+          nativeOnly: true,
+        },
+        resourceQuery: (query?: string) => {
+          if (!query) {
+            return false
+          }
+          const parsed = qs.parse(query.slice(1))
+          return parsed.vue != null && parsed.type === 'style'
+        },
+      }
+
       compiler.options.module!.rules = [
         pitcher,
+        stylePostRule,
         ...rules.filter((rule) => !vueLoaderRules.includes(rule)),
         templateCompilerRule,
         ...clonedRules,

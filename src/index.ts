@@ -140,7 +140,6 @@ export default function loader(
 
   const rawQuery = _resourceQuery.slice(1)
   const incomingQuery = qs.parse(rawQuery)
-  const resourceQuery = rawQuery ? `&${rawQuery}` : ''
   const options = (getOptions(loaderContext) || {}) as VueLoaderOptions
   const enableInlineMatchResource = Boolean(
     options.experimentalInlineMatchResource
@@ -220,11 +219,14 @@ export default function loader(
   if (script || scriptSetup) {
     const lang = script?.lang || scriptSetup?.lang
     isTS = !!(lang && /tsx?/.test(lang))
-    const externalQuery =
-      script && !scriptSetup && script.src ? `&external` : ``
     const src = (script && !scriptSetup && script.src) || resourcePath
-    const attrsQuery = attrsToQuery((scriptSetup || script)!.attrs, 'js')
-    const query = `?vue&type=script${attrsQuery}${resourceQuery}${externalQuery}`
+    const query = buildQuery([
+      'vue',
+      'type=script',
+      ...attrsToQuery((scriptSetup || script)!.attrs, 'js'),
+      rawQuery,
+      script && !scriptSetup && script.src && 'external',
+    ])
 
     let scriptRequest: string
 
@@ -249,13 +251,16 @@ export default function loader(
   const useInlineTemplate = canInlineTemplate(descriptor, isProduction)
   if (descriptor.template && !useInlineTemplate) {
     const src = descriptor.template.src || resourcePath
-    const externalQuery = descriptor.template.src ? `&external` : ``
-    const idQuery = `&id=${id}`
-    const scopedQuery = hasScoped ? `&scoped=true` : ``
-    const attrsQuery = attrsToQuery(descriptor.template.attrs)
-    const tsQuery =
-      options.enableTsInTemplate !== false && isTS ? `&ts=true` : ``
-    const query = `?vue&type=template${idQuery}${scopedQuery}${tsQuery}${attrsQuery}${resourceQuery}${externalQuery}`
+    const query = buildQuery([
+      'vue',
+      'type=template',
+      `id=${id}`,
+      hasScoped && 'scoped=true',
+      options.enableTsInTemplate !== false && isTS && 'ts=true',
+      ...attrsToQuery(descriptor.template.attrs),
+      rawQuery,
+      descriptor.template.src && 'external',
+    ])
 
     if (enableInlineMatchResource) {
       templateRequest = stringifyRequest(
@@ -283,19 +288,25 @@ export default function loader(
       .filter((style) => style.src || nonWhitespaceRE.test(style.content))
       .forEach((style, i) => {
         const src = style.src || resourcePath
-        const attrsQuery = attrsToQuery(style.attrs, 'css')
         const lang = String(style.attrs.lang || 'css')
         // make sure to only pass id when necessary so that we don't inject
         // duplicate tags when multiple components import the same css file
-        const idQuery = !style.src || style.scoped ? `&id=${id}` : ``
-        const inlineQuery = asCustomElement ? `&inline` : ``
-        const externalQuery = style.src ? `&external` : ``
-        const query = `?vue&type=style&index=${i}${idQuery}${inlineQuery}${attrsQuery}${resourceQuery}${externalQuery}`
+        const query = buildQuery([
+          'vue',
+          'type=style',
+          `index=${i}`,
+          (!style.src || style.scoped) && `id=${id}`,
+          asCustomElement && 'inline',
+          ...attrsToQuery(style.attrs, 'css'),
+          rawQuery,
+          style.src && 'external',
+        ])
 
         let styleRequest
         if (enableInlineMatchResource) {
+          const ext = style.module ? `module.${lang}` : lang
           styleRequest = stringifyRequest(
-            genMatchResource(this, src, query, lang)
+            genMatchResource(this, src, query, ext)
           )
         } else {
           styleRequest = stringifyRequest(src + query)
@@ -383,14 +394,16 @@ export default function loader(
       descriptor.customBlocks
         .map((block, i) => {
           const src = block.attrs.src || resourcePath
-          const attrsQuery = attrsToQuery(block.attrs)
-          const blockTypeQuery = `&blockType=${qs.escape(block.type)}`
-          const issuerQuery = block.attrs.src
-            ? `&issuerPath=${qs.escape(resourcePath)}`
-            : ''
-
-          const externalQuery = block.attrs.src ? `&external` : ``
-          const query = `?vue&type=custom&index=${i}${blockTypeQuery}${issuerQuery}${attrsQuery}${resourceQuery}${externalQuery}`
+          const query = buildQuery([
+            'vue',
+            'type=custom',
+            `index=${i}`,
+            `blockType=${qs.escape(block.type)}`,
+            block.attrs.src && `issuerPath=${qs.escape(resourcePath)}`,
+            ...attrsToQuery(block.attrs),
+            rawQuery,
+            block.attrs.src && 'external',
+          ])
 
           let customRequest
 
@@ -439,16 +452,23 @@ export default function loader(
 // if the user happen to add them as attrs
 const ignoreList = ['id', 'index', 'src', 'type']
 
-function attrsToQuery(attrs: SFCBlock['attrs'], langFallback?: string): string {
-  let query = ``
+function buildQuery(parts: (string | false | null | undefined)[]): string {
+  return `?${parts.filter(Boolean).join('&')}`
+}
+
+function attrsToQuery(
+  attrs: SFCBlock['attrs'],
+  langFallback?: string
+): string[] {
+  const query: string[] = []
   for (const name in attrs) {
     const value = attrs[name]
     if (!ignoreList.includes(name)) {
-      query += `&${qs.escape(name)}=${value ? qs.escape(String(value)) : ``}`
+      query.push(`${qs.escape(name)}=${value ? qs.escape(String(value)) : ``}`)
     }
   }
   if (langFallback && !(`lang` in attrs)) {
-    query += `&lang=${langFallback}`
+    query.push(`lang=${langFallback}`)
   }
   return query
 }

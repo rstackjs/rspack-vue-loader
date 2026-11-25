@@ -1,10 +1,321 @@
 import cssesc from 'cssesc'
+import { SourceMapConsumer } from 'source-map'
+import { pitch } from 'rspack-vue-loader/pitcher'
 import {
+  bundle,
   mockBundleAndRun,
+  mfs,
   genId,
   normalizeNewline,
   DEFAULT_VUE_USE,
 } from './utils'
+
+const builtinCssOptions = {
+  builtinCss: true,
+  vue: {
+    experimentalInlineMatchResource: true,
+  },
+}
+
+test('built-in CSS supports normal and scoped styles', async () => {
+  const { stats } = await bundle({
+    ...builtinCssOptions,
+    entry: 'scoped-css.vue',
+  })
+  const cssAssets = stats
+    .toJson({ assets: true })
+    .assets?.filter((asset) => asset.name.endsWith('.css'))
+
+  expect(cssAssets?.length).toBeGreaterThan(0)
+  const css = normalizeNewline(
+    cssAssets!
+      .map((asset) => mfs.readFileSync(`/${asset.name}`).toString())
+      .join('\n')
+  )
+  const scopeId = `data-v-${genId('scoped-css.vue')}`
+  expect(css).toContain(`.test[${scopeId}]`)
+})
+
+test('built-in CSS supports CSS modules', async () => {
+  const { instance } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules-extend.vue',
+  })
+
+  expect(instance.$style.red).toBeDefined()
+  expect(instance.$el.className).toBe(instance.$style.red)
+
+  const { instance: namedInstance, stats } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules.vue',
+  })
+
+  expect(namedInstance.style.red).toBeDefined()
+  expect(namedInstance.$style.red).toBeDefined()
+
+  const cssAssets = (stats.toJson({ assets: true }).assets ?? []).filter(
+    (asset) => asset.name.endsWith('.css')
+  )
+  expect(cssAssets.length).toBeGreaterThan(0)
+  const css = normalizeNewline(
+    cssAssets
+      .map((asset) => mfs.readFileSync(`/${asset.name}`).toString())
+      .join('\n')
+  )
+  const escapedNamed = cssesc(namedInstance.style.red, { isIdentifier: true })
+  const escapedScoped = cssesc(namedInstance.$style.red, {
+    isIdentifier: true,
+  })
+  const scopeId = `data-v-${genId('css-modules.vue')}`
+  expect(css).toContain(`.${escapedNamed}`)
+  expect(css).toContain(`.${escapedScoped}[${scopeId}]`)
+})
+
+test('built-in CSS exports inline styles for custom elements', async () => {
+  const { componentModule } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'custom-element.ce.vue',
+  })
+
+  expect(componentModule.styles).toHaveLength(1)
+  expect(componentModule.styles[0]).toContain('color: red')
+})
+
+test('built-in CSS resolves asset URLs in CSS modules with empty publicPath', async () => {
+  const { instance, stats } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules-asset.vue',
+    output: {
+      publicPath: '',
+    },
+    module: {
+      rules: [
+        {
+          test: /\.png$/,
+          type: 'asset/resource',
+        },
+      ],
+    },
+  })
+
+  expect(instance.$style.banner).toBeDefined()
+  expect(instance.$el.className).toBe(instance.$style.banner)
+
+  const assets = stats.toJson({ assets: true }).assets ?? []
+  const pngAssets = assets.filter((asset) => asset.name.endsWith('.png'))
+  const cssAssets = assets.filter((asset) => asset.name.endsWith('.css'))
+
+  expect(pngAssets).toHaveLength(1)
+  expect(cssAssets.length).toBeGreaterThan(0)
+
+  const css = normalizeNewline(
+    cssAssets
+      .map((asset) => mfs.readFileSync(`/${asset.name}`).toString())
+      .join('\n')
+  )
+  expect(css).toContain(pngAssets[0].name)
+  expect(css).not.toContain('./logo.png')
+})
+
+test('built-in CSS resolves asset URLs in custom element inline styles with empty publicPath', async () => {
+  const { componentModule, stats } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'custom-element-asset.ce.vue',
+    output: {
+      publicPath: '',
+    },
+    module: {
+      rules: [
+        {
+          test: /\.png$/,
+          type: 'asset/resource',
+        },
+      ],
+    },
+  })
+
+  expect(componentModule.styles).toHaveLength(1)
+
+  const assets = stats.toJson({ assets: true }).assets ?? []
+  const pngAssets = assets.filter((asset) => asset.name.endsWith('.png'))
+
+  expect(pngAssets).toHaveLength(1)
+  expect(componentModule.styles[0]).toContain('color: red')
+  expect(componentModule.styles[0]).toContain(pngAssets[0].name)
+  expect(componentModule.styles[0]).not.toContain('./logo.png')
+})
+
+test('built-in CSS preserves preprocessor source maps for CSS modules', async () => {
+  const { stats } = await bundle({
+    ...builtinCssOptions,
+    entry: 'css-modules.vue',
+    devtool: 'source-map',
+    modify: (config: any) => {
+      const cssRule = config.module.rules.find(
+        (r: any) => r.test instanceof RegExp && r.test.test('.css')
+      )
+      const moduleRule = cssRule.oneOf.find((r: any) => !r.resourceQuery)
+      moduleRule.use = [require.resolve('./mock-loaders/css-sourcemap')]
+    },
+  })
+
+  const cssAssets = (stats.toJson({ assets: true }).assets ?? []).filter(
+    (asset) => asset.name.endsWith('.css')
+  )
+  expect(cssAssets.length).toBeGreaterThan(0)
+
+  const cssAsset = cssAssets[0]
+  const css = normalizeNewline(mfs.readFileSync(`/${cssAsset.name}`).toString())
+  const rawMap = mfs.readFileSync(`/${cssAsset.name}.map`).toString()
+
+  expect(css).toContain('/* injected-1 */')
+  expect(css.match(/\/\* injected-1 \*\//g)).toHaveLength(2)
+
+  const scopeId = `data-v-${genId('css-modules.vue')}`
+  const lines = css.split('\n')
+  const scopedSelectorLine = lines.findIndex((line) => line.includes(scopeId))
+  expect(scopedSelectorLine).toBeGreaterThan(-1)
+
+  const declLineIndex = lines.findIndex(
+    (line, index) => index > scopedSelectorLine && line.includes('color: red;')
+  )
+  expect(declLineIndex).toBeGreaterThan(-1)
+
+  const smc = new SourceMapConsumer(JSON.parse(rawMap))
+  const pos = smc.originalPositionFor({
+    line: declLineIndex + 1,
+    column: lines[declLineIndex].indexOf('color'),
+  })
+
+  expect(pos.source).toMatch(/test\/fixtures\/css-modules\.vue$/)
+  expect(pos.line).toBe(15)
+  expect(pos.column).toBe(2)
+})
+
+test('built-in CSS supports rules registered by plugins after VueLoaderPlugin', async () => {
+  const { instance } = await mockBundleAndRun({
+    ...builtinCssOptions,
+    entry: 'css-modules-extend.vue',
+    modify: (config: any) => {
+      config.module.rules = config.module.rules.filter(
+        (r: any) => !(r.test instanceof RegExp && r.test.test('.css'))
+      )
+      config.plugins.push({
+        apply(compiler: any) {
+          compiler.options.module.rules.push({
+            test: /\.css$/,
+            type: 'css/auto',
+            parser: {
+              namedExports: false,
+            },
+          })
+        },
+      })
+    },
+  })
+
+  expect(instance.$style.red).toBeDefined()
+  expect(instance.$el.className).toBe(instance.$style.red)
+})
+
+test('experimentalInlineMatchResource preserves non-css-loader JS style loaders', async () => {
+  const { componentModule } = await mockBundleAndRun({
+    entry: 'custom-element.ce.vue',
+    vue: {
+      experimentalInlineMatchResource: true,
+    },
+    modify: (config: any) => {
+      const cssRule = config.module.rules.find(
+        (r: any) => r.test instanceof RegExp && r.test.test('.css')
+      )
+      cssRule.use = [require.resolve('./mock-loaders/style-raw-js')]
+    },
+  })
+
+  expect(componentModule.styles).toHaveLength(1)
+  expect(componentModule.styles[0]).toContain('color: red')
+})
+
+test('built-in CSS requires experimentalInlineMatchResource', async () => {
+  const { stats } = await bundle(
+    {
+      builtinCss: true,
+      vue: {
+        experimentalInlineMatchResource: false,
+      },
+      entry: 'basic.vue',
+    },
+    true
+  )
+
+  expect(stats.hasErrors()).toBe(true)
+  expect(stats.toString({ all: false, errors: true })).toContain(
+    '`experimentalInlineMatchResource` should be enabled when using native CSS modules'
+  )
+})
+
+test('built-in CSS requires Rspack >= 2.3.0 for inline and module styles', () => {
+  const runPitch = (
+    resourceQuery: string,
+    type: string,
+    rspackVersion: string
+  ) => {
+    const emitError = rstest.fn()
+    const result = pitch.call({
+      resourcePath: '/test.vue',
+      resourceQuery,
+      resource: `/test.vue${resourceQuery}`,
+      loaders: [],
+      query: {
+        experimentalInlineMatchResource: true,
+      },
+      _module: {
+        type,
+      },
+      _compiler: {
+        webpack: {
+          rspackVersion,
+        },
+      },
+      emitError,
+    } as any)
+    return { result, emitError }
+  }
+
+  const belowMinModule = runPitch(
+    '?vue&type=style&module=true&lang=css',
+    'css/module',
+    '2.2.99'
+  )
+  expect(belowMinModule.result).toBe('')
+  expect(belowMinModule.emitError).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message:
+        '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules',
+    })
+  )
+
+  const prereleaseInline = runPitch(
+    '?vue&type=style&inline&lang=css',
+    'css/auto',
+    '2.3.0-beta.0'
+  )
+  expect(prereleaseInline.result).toBe('')
+  expect(prereleaseInline.emitError).toHaveBeenCalledWith(
+    expect.objectContaining({
+      message:
+        '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules',
+    })
+  )
+
+  const supportedModule = runPitch(
+    '?vue&type=style&module=true&lang=css',
+    'css/module',
+    '2.3.0'
+  )
+  expect(supportedModule.result).toBeUndefined()
+  expect(supportedModule.emitError).not.toHaveBeenCalled()
+})
 
 test('scoped style', async () => {
   const { window, instance, componentModule } = await mockBundleAndRun({

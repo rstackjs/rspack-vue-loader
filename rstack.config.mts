@@ -7,6 +7,7 @@ define.test({
   output: {
     externals: {
       'rspack-vue-loader': 'commonjs ../dist/index.js',
+      'rspack-vue-loader/pitcher': 'commonjs ../dist/pitcher.js',
     },
   },
 })

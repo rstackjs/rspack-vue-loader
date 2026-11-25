@@ -1,6 +1,7 @@
 import * as qs from 'querystring'
 import type { LoaderDefinitionFunction } from '@rspack/core'
 import { compiler } from './compiler'
+import { getOptions, isNativeCSSModule } from './util'
 
 const { compileStyle } = compiler
 
@@ -8,6 +9,12 @@ const { compileStyle } = compiler
 // Injected right before css-loader by the global pitcher (../pitch.js)
 // for any <style scoped> selection requests initiated from within vue files.
 const StylePostLoader: LoaderDefinitionFunction = function (source, inMap) {
+  const options = (getOptions(this) || {}) as { nativeOnly?: boolean }
+  if (options.nativeOnly && !isNativeCSSModule(this._module?.type)) {
+    this.callback(null, source, inMap)
+    return
+  }
+
   const query = qs.parse(this.resourceQuery.slice(1))
 
   // skip normal CSS files

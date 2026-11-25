@@ -66,6 +66,7 @@ const createBaseConfig = (): Configuration => ({
 })
 
 type BundleOptions = Configuration & {
+  builtinCss?: boolean
   vue?: VueLoaderOptions
   modify?: (config: Configuration) => void
 }
@@ -78,12 +79,34 @@ export async function bundle(
   stats: Stats
 }> {
   let config: BundleOptions = merge(createBaseConfig(), options)
+  delete config.builtinCss
 
-  config.module?.rules?.push({
-    test: /\.css$/,
-    type: 'javascript/auto',
-    use: ['style-loader', 'css-loader'],
-  })
+  if (!options.builtinCss) {
+    config.module?.rules?.push({
+      test: /\.css$/,
+      type: 'javascript/auto',
+      use: ['style-loader', 'css-loader'],
+    })
+  } else {
+    config.module?.rules?.push({
+      test: /\.css$/,
+      oneOf: [
+        {
+          resourceQuery: /inline/,
+          type: 'css/auto',
+          parser: {
+            exportType: 'text',
+          },
+        },
+        {
+          type: 'css/auto',
+          parser: {
+            namedExports: false,
+          },
+        },
+      ],
+    })
+  }
 
   if (config.vue && config.module) {
     const vueOptions = {

@@ -49,7 +49,9 @@ export function resolveTemplateTSOptions(
 
 // loader utils removed getOptions in 3.x, but it's not available on webpack 4
 // loader context
-export function getOptions(loaderContext: LoaderContext<VueLoaderOptions>) {
+export function getOptions<T = VueLoaderOptions>(
+  loaderContext: LoaderContext<T>
+) {
   const query = loaderContext.query
 
   if (typeof query === 'string' && query !== '') {
@@ -196,9 +198,12 @@ export function genMatchResource(
       .map((obj) => obj.request)
     loaders.push(...currentRequest)
   }
-  const loaderString = loaders.join('!')
-
-  return `${resourcePath}${lang ? `.${lang}` : ''}${resourceQuery}!=!${
-    loaderString ? `${loaderString}!` : ''
-  }${resourcePath}${resourceQuery}`
+  const resource = `${resourcePath}${resourceQuery}`
+  return [
+    resourcePath,
+    lang ? `.${lang}` : '',
+    resourceQuery,
+    '!=!',
+    [...loaders, resource].join('!'),
+  ].join('')
 }

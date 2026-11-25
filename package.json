@@ -29,10 +29,11 @@
   "packageManager": "pnpm@12.15.0",
   "dependencies": {
     "@rspack/lite-tapable": "^1.1.0",
-    "chalk": "^4.1.0"
+    "chalk": "^4.1.0",
+    "semver": "^7.8.6"
   },
   "peerDependencies": {
-    "@rspack/core": "^1.0.0 || ^2.0.0"
+    "@rspack/core": "^2.3.0"
   },
   "peerDependenciesMeta": {
     "@rspack/core": {
@@ -47,13 +48,14 @@
   },
   "devDependencies": {
     "@intlify/vue-i18n-loader": "^3.0.0",
-    "@rspack/cli": "^2.2.2",
-    "@rspack/core": "^2.2.2",
+    "@rspack/cli": "^2.3.0",
+    "@rspack/core": "^2.3.0",
     "@rspack/dev-server": "^2.2.1",
     "@swc/helpers": "^0.5.23",
     "@types/cssesc": "^3.0.2",
     "@types/estree": "^0.0.45",
     "@types/jsdom": "^16.2.13",
+    "@types/semver": "^7.8.0",
     "css-loader": "^7.1.5",
     "cssesc": "^3.0.0",
     "jsdom": "^16.4.0",

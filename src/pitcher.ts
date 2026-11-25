@@ -1,5 +1,6 @@
 import type { LoaderDefinitionFunction, LoaderContext } from '@rspack/core'
 import * as qs from 'querystring'
+import { gte, valid } from 'semver'
 import { getOptions, isNativeCSSModule, stringifyRequest } from './util'
 import { VueLoaderOptions } from '.'
 
@@ -16,14 +17,19 @@ const isNullLoader = (l: Loader) => /(\/|\\|@)null-loader/.test(l.path)
 const isCSSLoader = (l: Loader) => /(\/|\\|@)css-loader/.test(l.path)
 const isCacheLoader = (l: Loader) => /(\/|\\|@)cache-loader/.test(l.path)
 const isNotPitcher = (l: Loader) => l.path !== __filename
+const isStylePostLoader = (l: Loader) => l.path === stylePostLoaderPath
 
-const pitcher: LoaderDefinitionFunction = (code) => code
+const pitcher: LoaderDefinitionFunction = function (code, map) {
+  this.callback(null, code, map)
+}
 
 // This pitching loader is responsible for intercepting all vue block requests
 // and transform it into appropriate requests.
 export const pitch = function () {
   const context = this as LoaderContext<VueLoaderOptions>
-  const rawLoaders = context.loaders.filter(isNotPitcher)
+  const rawLoaders = context.loaders.filter(
+    (l) => isNotPitcher(l) && !isStylePostLoader(l)
+  )
   let loaders = rawLoaders
 
   // do not inject if user uses null-loader to void the type (#1239)
@@ -61,9 +67,8 @@ export const pitch = function () {
   const options = (getOptions(context) || {}) as VueLoaderOptions
   if (query.type === `style`) {
     if (isNativeCSSModule(context._module?.type)) {
-      // If the current module uses native CSS, emit CSS code directly.
-      // Although we can target requests like `xxx.vue?type=style` to match `type: "css"`,
-      // it will make the plugin a mess.
+      // If the current module uses native CSS, pass it through directly so
+      // Rspack's built-in CSS pipeline handles parsing and exports.
       if (!options.experimentalInlineMatchResource) {
         context.emitError(
           new Error(
@@ -73,28 +78,26 @@ export const pitch = function () {
         return ''
       }
 
-      if (query.inline || query.module) {
-        context.emitError(
-          new Error(
-            '`inline` or `module` is currently not supported with native CSS modules'
+      if (query.inline != null || query.module != null) {
+        const rspackVersion = context._compiler?.webpack.rspackVersion
+        if (
+          !rspackVersion ||
+          !valid(rspackVersion) ||
+          !gte(rspackVersion, '2.3.0')
+        ) {
+          context.emitError(
+            new Error(
+              '`inline` or `module` requires Rspack >= 2.3.0 when using native CSS modules'
+            )
           )
-        )
-        return ''
+          return ''
+        }
       }
 
-      const loaderString = [stylePostLoaderPath, ...loaders]
-        .map((loader) => {
-          return typeof loader === 'string' ? loader : loader.request
-        })
-        .join('!')
-      const styleRequest = stringifyRequest(
-        context,
-        `${context.resourcePath}${query.lang ? `.${query.lang}` : ''}${
-          context.resourceQuery
-        }!=!-!${loaderString}!${context.resource}`
-      )
-      return `@import ${styleRequest};`
+      return
     }
+    const lang = (query.lang as string) || 'css'
+    const ext = query.module ? `module.${lang}` : lang
     const cssLoaderIndex = loaders.findIndex(isCSSLoader)
     if (cssLoaderIndex > -1) {
       // if inlined, ignore any loaders after css-loader and replace w/ inline
@@ -108,9 +111,16 @@ export const pitch = function () {
         [...afterLoaders, stylePostLoaderPath, ...beforeLoaders],
         context,
         !!query.module || query.inline != null,
-        (query.lang as string) || 'css'
+        ext
       )
     }
+
+    return genProxyModule(
+      loaders,
+      context,
+      !!query.module || query.inline != null,
+      ext
+    )
   }
 
   // if a custom block has no other matching loader other than vue-loader itself
@@ -157,20 +167,25 @@ function genRequest(
     return typeof loader === 'string' ? loader : loader.request
   })
   const resource = context.resourcePath + context.resourceQuery
+  const inlineLoaderRequest = [
+    '-!',
+    [...loaderStrings, resource].join('!'),
+  ].join('')
 
   if (enableInlineMatchResource) {
     return stringifyRequest(
       context,
-      `${context.resourcePath}${lang ? `.${lang}` : ''}${
-        context.resourceQuery
-      }!=!-!${[...loaderStrings, resource].join('!')}`
+      [
+        context.resourcePath,
+        lang ? `.${lang}` : '',
+        context.resourceQuery,
+        '!=!',
+        inlineLoaderRequest,
+      ].join('')
     )
   }
 
-  return stringifyRequest(
-    context,
-    '-!' + [...loaderStrings, resource].join('!')
-  )
+  return stringifyRequest(context, inlineLoaderRequest)
 }
 
 function shouldIgnoreCustomBlock(loaders: Loader[]) {
