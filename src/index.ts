@@ -304,8 +304,9 @@ export default function loader(
 
         let styleRequest
         if (enableInlineMatchResource) {
+          const ext = style.module ? `module.${lang}` : lang
           styleRequest = stringifyRequest(
-            genMatchResource(this, src, query, lang)
+            genMatchResource(this, src, query, ext)
           )
         } else {
           styleRequest = stringifyRequest(src + query)

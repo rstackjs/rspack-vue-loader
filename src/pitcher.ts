@@ -79,6 +79,8 @@ export const pitch = function () {
 
       return
     }
+    const lang = (query.lang as string) || 'css'
+    const ext = query.module ? `module.${lang}` : lang
     const cssLoaderIndex = loaders.findIndex(isCSSLoader)
     if (cssLoaderIndex > -1) {
       // if inlined, ignore any loaders after css-loader and replace w/ inline
@@ -92,7 +94,7 @@ export const pitch = function () {
         [...afterLoaders, stylePostLoaderPath, ...beforeLoaders],
         context,
         !!query.module || query.inline != null,
-        (query.lang as string) || 'css'
+        ext
       )
     }
 
@@ -100,7 +102,7 @@ export const pitch = function () {
       loaders,
       context,
       !!query.module || query.inline != null,
-      (query.lang as string) || 'css'
+      ext
     )
   }
 

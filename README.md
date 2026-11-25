@@ -338,13 +338,16 @@ You can use Rspack's built-in CSS processing by replacing the Vue and CSS rules 
 },
 {
   test: /\.css$/,
-  type: 'css',
+  type: 'css/auto',
+  parser: {
+    namedExports: false,
+  },
 },
 ```
 
-Keep `VueLoaderPlugin` and remove `CssExtractRspackPlugin` if no other rules use CSS extraction. This path processes CSS without `css-loader`.
+Keep `VueLoaderPlugin` and remove `CssExtractRspackPlugin` if no other rules use CSS extraction. This path processes CSS without `css-loader`. `<style module>` blocks generate `.module.<lang>` match resources so `type: 'css/auto'` handles regular, scoped, and `<style module>` styles in one rule, with `parser.namedExports: false` providing the default export expected for `$style` and `useCssModule()`.
 
-To also support `<style module>` and [custom element](#customelement) inline styles with built-in CSS, configure the CSS rule with `oneOf`:
+To also support [custom element](#customelement) inline styles with built-in CSS, configure the CSS rule with `oneOf`:
 
 ```js
 {
@@ -358,14 +361,10 @@ To also support `<style module>` and [custom element](#customelement) inline sty
       },
     },
     {
-      resourceQuery: /module/,
-      type: 'css/module',
+      type: 'css/auto',
       parser: {
         namedExports: false,
       },
-    },
-    {
-      type: 'css/auto',
     },
   ],
 }
@@ -374,8 +373,7 @@ To also support `<style module>` and [custom element](#customelement) inline sty
 In this `oneOf` rule:
 
 - `/inline/` (`parser.exportType: 'text'`) handles custom element inline styles.
-- `/module/` (`type: 'css/module'` with `parser.namedExports: false`) handles `<style module>` and provides the default export expected for `$style` and `useCssModule()`.
-- The fallback `type: 'css/auto'` handles regular and scoped styles.
+- The fallback `type: 'css/auto'` (`parser.namedExports: false`) handles regular, scoped, and `<style module>` styles.
 
 ### Static assets
 

@@ -153,10 +153,7 @@ test('built-in CSS preserves preprocessor source maps for CSS modules', async ()
       const cssRule = config.module.rules.find(
         (r: any) => r.test instanceof RegExp && r.test.test('.css')
       )
-      const moduleRule = cssRule.oneOf.find(
-        (r: any) =>
-          r.resourceQuery instanceof RegExp && r.resourceQuery.test('?module')
-      )
+      const moduleRule = cssRule.oneOf.find((r: any) => !r.resourceQuery)
       moduleRule.use = [require.resolve('./mock-loaders/css-sourcemap')]
     },
   })
@@ -206,18 +203,10 @@ test('built-in CSS supports rules registered by plugins after VueLoaderPlugin', 
         apply(compiler: any) {
           compiler.options.module.rules.push({
             test: /\.css$/,
-            oneOf: [
-              {
-                resourceQuery: /module/,
-                type: 'css/module',
-                parser: {
-                  namedExports: false,
-                },
-              },
-              {
-                type: 'css/auto',
-              },
-            ],
+            type: 'css/auto',
+            parser: {
+              namedExports: false,
+            },
           })
         },
       })

@@ -99,14 +99,10 @@ export async function bundle(
           },
         },
         {
-          resourceQuery: /module/,
-          type: 'css/module',
+          type: 'css/auto',
           parser: {
             namedExports: false,
           },
-        },
-        {
-          type: 'css/auto',
         },
       ],
     })
